@@ -1,0 +1,859 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		08C4C6CC6D29C13AB58502B3 /* ImageTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF22E764FE6C5570FB84CCEF /* ImageTools.swift */; };
+		13B04191D2252A6B14235A8B /* Domain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3875299D2F2F8CFA6C299D01 /* Domain.swift */; };
+		1533202797564625826FE7A6 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28C7BA29CE5FE0F8751460A /* Persistence.swift */; };
+		1CF22338CE9E8A23A47D5225 /* PurchasesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C52326FF45AE8A4AB5A43E2 /* PurchasesView.swift */; };
+		1F51A2612F73CDDC6344AB64 /* PhoneRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AE854CC3479F672BBE21B74 /* PhoneRootView.swift */; };
+		20353E8033F99893947DA87D /* ReceiptParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38542D5491C24E2F5503E08 /* ReceiptParser.swift */; };
+		2105A380331B8639EC20CE84 /* ZipWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A170E8F08043F3D1FA76CDBF /* ZipWriter.swift */; };
+		22E9B0C4D0208AE1DDACB709 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FD0306135D0CD01C02958E15 /* Assets.xcassets */; };
+		2C1711A74864254AE0F32570 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C77FC1C400DDDB9D57B5FA1 /* SettingsView.swift */; };
+		2EB8FF75B68E99C19904C25D /* CoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA76EC08A7695FFE5F6EC58 /* CoreTests.swift */; };
+		376E103F35B9C178804DBB31 /* ReportData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08E7BDC906F34B3CBE84F685 /* ReportData.swift */; };
+		385332BEEC559A01A7BBDBA4 /* ReceiptParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38542D5491C24E2F5503E08 /* ReceiptParser.swift */; };
+		3BF6A8B0B983FBDC2F592932 /* PhotoViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70A5F430E0449610E50E1D52 /* PhotoViews.swift */; };
+		3D7800830BF2D75201C6B2D2 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28C7BA29CE5FE0F8751460A /* Persistence.swift */; };
+		3D7A860E70AC29491C10505A /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C946A454EB9FB8795D2DEC03 /* Theme.swift */; };
+		432989183684844FA9937F52 /* Money.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C2D575C2447E55E1340924B /* Money.swift */; };
+		44AEFA982282EA7CFA70A8BD /* ReceiptEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D8D58F3D01A891B3C7E294 /* ReceiptEditorView.swift */; };
+		4585FC2076C4D47CABAE16EB /* Domain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3875299D2F2F8CFA6C299D01 /* Domain.swift */; };
+		5509F7D5AF9F1529AF859C6F /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D94715E8A9493E46DF3567BC /* AppState.swift */; };
+		66620F7B645127F0048DAC15 /* BackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D283158F46803D338651D1 /* BackupService.swift */; };
+		6ADE837FFA6D83DAD97808E9 /* RekvizitApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46614C81F0566FD5B8AB5023 /* RekvizitApp.swift */; };
+		6AF5C985C2F21DE2E4269E94 /* ZipWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A170E8F08043F3D1FA76CDBF /* ZipWriter.swift */; };
+		6D6CB073643D706639E4977E /* ReportsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154DCB1B5B73124629D92653 /* ReportsView.swift */; };
+		775A792217C458A0BC48AA0D /* MacRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 199651B8EF81DB0768903D6F /* MacRootView.swift */; };
+		7B061A7FA98E131BC06CE032 /* ProjectSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60AD02CBE7BA5D2EEC15E954 /* ProjectSheets.swift */; };
+		7B9E52552FAF6DEBC73DC87C /* ReportData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08E7BDC906F34B3CBE84F685 /* ReportData.swift */; };
+		87318A80261C4EBD144A71ED /* MacWorkspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92ADC44786704FBA990E6DC0 /* MacWorkspace.swift */; };
+		880D68893DBFD90F064706BA /* ProjectSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60AD02CBE7BA5D2EEC15E954 /* ProjectSheets.swift */; };
+		8B38B92C7AB5ECE2B635B820 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 020E4D721446CAFFB1B0846E /* HomeView.swift */; };
+		8F25E96ECE7D9815863B4926 /* ReceiptEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D8D58F3D01A891B3C7E294 /* ReceiptEditorView.swift */; };
+		956B2E314659B988A0DF0701 /* ReportsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154DCB1B5B73124629D92653 /* ReportsView.swift */; };
+		95BC1CD2DD2A45C65C5D0176 /* Info-iOS.plist in Resources */ = {isa = PBXBuildFile; fileRef = 94EDDA3C4E7C999065C369D6 /* Info-iOS.plist */; };
+		97FF0EF826E70784DFE9E3CA /* XLSXBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A29BE9946502461B1A3D6443 /* XLSXBuilder.swift */; };
+		9D83F4736A5160E9013B7AC7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FD0306135D0CD01C02958E15 /* Assets.xcassets */; };
+		AE2AA4E7069CA3A9E75133DB /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 020E4D721446CAFFB1B0846E /* HomeView.swift */; };
+		B0B0616D0DC296693A0D8B86 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C77FC1C400DDDB9D57B5FA1 /* SettingsView.swift */; };
+		B5333683AA39106A3430F5B1 /* ImageTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF22E764FE6C5570FB84CCEF /* ImageTools.swift */; };
+		B8BAB9615699020158870E8E /* BackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D283158F46803D338651D1 /* BackupService.swift */; };
+		BB6B259AA65D1DD0E7B61AC2 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C946A454EB9FB8795D2DEC03 /* Theme.swift */; };
+		BCD4AC0C2C9DEC0B9617FA59 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 633D5A87D481FD302CA63E1E /* Model.swift */; };
+		BEA09F8FF4147EC7C4BD70E6 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D94715E8A9493E46DF3567BC /* AppState.swift */; };
+		BF65A41D0C41E46284859E74 /* XLSXBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A29BE9946502461B1A3D6443 /* XLSXBuilder.swift */; };
+		BFE099F0D58F7612FD4DF1B5 /* ReceiptsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B131B8187768F8A809EC2A13 /* ReceiptsView.swift */; };
+		C2A628DFC243FC12A4AD7881 /* ParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18F04FDF8651311E9A9F41AF /* ParserTests.swift */; };
+		C4BBAEA9B9B17855073B70F2 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 633D5A87D481FD302CA63E1E /* Model.swift */; };
+		C5C671A7897C57CA11E48F3B /* PurchasesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C52326FF45AE8A4AB5A43E2 /* PurchasesView.swift */; };
+		C8B1B407A6C53D391DE4B93F /* RekvizitApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46614C81F0566FD5B8AB5023 /* RekvizitApp.swift */; };
+		CE0E40FFE7093D1E73608AF7 /* PDFBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF207614402AAB2019BCA06 /* PDFBuilder.swift */; };
+		D09A90AF564B00F559E2DF31 /* CameraViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C747C5B5B9A91CBC25016470 /* CameraViews.swift */; };
+		DAC4E885F97F3388B4EFB98B /* PhotoViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70A5F430E0449610E50E1D52 /* PhotoViews.swift */; };
+		DB2603D0D5A5A7650CA547E0 /* ReceiptsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B131B8187768F8A809EC2A13 /* ReceiptsView.swift */; };
+		E34B386F4657D0C80CB99246 /* OCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24D6D833984D67E3800BA70C /* OCRService.swift */; };
+		E4A1F4CC82A7ADBBA1F3A3EE /* OCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24D6D833984D67E3800BA70C /* OCRService.swift */; };
+		EEA51774D6135BF60FF7B645 /* PDFBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF207614402AAB2019BCA06 /* PDFBuilder.swift */; };
+		F86C9C4F457EAC62613B3C54 /* Money.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C2D575C2447E55E1340924B /* Money.swift */; };
+		FB35A4DB3874EE343EE0A2A0 /* Info-macOS.plist in Resources */ = {isa = PBXBuildFile; fileRef = 781CCC7D004A531F621D8B30 /* Info-macOS.plist */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		C29BECA6BDA1992335CEF278 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4A4657F1593244F9A5C3B24B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 681FCD37D29B722BB078B273;
+			remoteInfo = "Rekvizit-macOS";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		020E4D721446CAFFB1B0846E /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		053621F54A9147617E354633 /* RekvizitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RekvizitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		07AEF4688FF799A8204AACDA /* Rekvizit-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Rekvizit-iOS.entitlements"; sourceTree = "<group>"; };
+		08E7BDC906F34B3CBE84F685 /* ReportData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportData.swift; sourceTree = "<group>"; };
+		0C77FC1C400DDDB9D57B5FA1 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		154DCB1B5B73124629D92653 /* ReportsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportsView.swift; sourceTree = "<group>"; };
+		18DE864D503B1148600E87E8 /* Local-iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Local-iOS.entitlements"; sourceTree = "<group>"; };
+		18F04FDF8651311E9A9F41AF /* ParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParserTests.swift; sourceTree = "<group>"; };
+		199651B8EF81DB0768903D6F /* MacRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacRootView.swift; sourceTree = "<group>"; };
+		24D6D833984D67E3800BA70C /* OCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRService.swift; sourceTree = "<group>"; };
+		3875299D2F2F8CFA6C299D01 /* Domain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain.swift; sourceTree = "<group>"; };
+		3AA76EC08A7695FFE5F6EC58 /* CoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreTests.swift; sourceTree = "<group>"; };
+		46614C81F0566FD5B8AB5023 /* RekvizitApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RekvizitApp.swift; sourceTree = "<group>"; };
+		4C2D575C2447E55E1340924B /* Money.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Money.swift; sourceTree = "<group>"; };
+		60AD02CBE7BA5D2EEC15E954 /* ProjectSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectSheets.swift; sourceTree = "<group>"; };
+		633D5A87D481FD302CA63E1E /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
+		6C52326FF45AE8A4AB5A43E2 /* PurchasesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesView.swift; sourceTree = "<group>"; };
+		6E76E41E372733890CD115CA /* Rekvizit-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Rekvizit-macOS.entitlements"; sourceTree = "<group>"; };
+		70A5F430E0449610E50E1D52 /* PhotoViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoViews.swift; sourceTree = "<group>"; };
+		781CCC7D004A531F621D8B30 /* Info-macOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Info-macOS.plist"; sourceTree = "<group>"; };
+		7AE854CC3479F672BBE21B74 /* PhoneRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneRootView.swift; sourceTree = "<group>"; };
+		8CF207614402AAB2019BCA06 /* PDFBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFBuilder.swift; sourceTree = "<group>"; };
+		92ADC44786704FBA990E6DC0 /* MacWorkspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacWorkspace.swift; sourceTree = "<group>"; };
+		94EDDA3C4E7C999065C369D6 /* Info-iOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Info-iOS.plist"; sourceTree = "<group>"; };
+		954EB0215F867CD3F6EF47D3 /* Local-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Local-macOS.entitlements"; sourceTree = "<group>"; };
+		A170E8F08043F3D1FA76CDBF /* ZipWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipWriter.swift; sourceTree = "<group>"; };
+		A29BE9946502461B1A3D6443 /* XLSXBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XLSXBuilder.swift; sourceTree = "<group>"; };
+		A5D8D58F3D01A891B3C7E294 /* ReceiptEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptEditorView.swift; sourceTree = "<group>"; };
+		AF0A46C58B60A69450913DCC /* Rekvizit-iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "Rekvizit-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B131B8187768F8A809EC2A13 /* ReceiptsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptsView.swift; sourceTree = "<group>"; };
+		B4D283158F46803D338651D1 /* BackupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupService.swift; sourceTree = "<group>"; };
+		C28C7BA29CE5FE0F8751460A /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
+		C747C5B5B9A91CBC25016470 /* CameraViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViews.swift; sourceTree = "<group>"; };
+		C946A454EB9FB8795D2DEC03 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		D38542D5491C24E2F5503E08 /* ReceiptParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptParser.swift; sourceTree = "<group>"; };
+		D94715E8A9493E46DF3567BC /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		DF22E764FE6C5570FB84CCEF /* ImageTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageTools.swift; sourceTree = "<group>"; };
+		F9B6A3C5DF10CA158FC08EC6 /* Rekvizit-macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Rekvizit-macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FD0306135D0CD01C02958E15 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		127822C0C16591784F49407B /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				79C63DCB90E357DA24B85B2D /* iOS */,
+				36B291E8409E95E8300D837F /* macOS */,
+				371DFC2790A007839D18DFD0 /* Shared */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		12B0C44167C4DB8AE19B6939 = {
+			isa = PBXGroup;
+			children = (
+				E034BD6E55C4E41A2AAD615E /* Resources */,
+				127822C0C16591784F49407B /* Sources */,
+				72699A22012C906E19C97F1F /* Tests */,
+				F08B928FD47CDC62052350B3 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		36B291E8409E95E8300D837F /* macOS */ = {
+			isa = PBXGroup;
+			children = (
+				199651B8EF81DB0768903D6F /* MacRootView.swift */,
+				92ADC44786704FBA990E6DC0 /* MacWorkspace.swift */,
+			);
+			path = macOS;
+			sourceTree = "<group>";
+		};
+		371DFC2790A007839D18DFD0 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				A071EB3CD3B1045FFD85FBE8 /* App */,
+				79640EF16448745150876C54 /* Data */,
+				CB5FECC58E400F109EBF88DA /* Services */,
+				C96737D10E32016F045A0400 /* Views */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		72699A22012C906E19C97F1F /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				3AA76EC08A7695FFE5F6EC58 /* CoreTests.swift */,
+				18F04FDF8651311E9A9F41AF /* ParserTests.swift */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		79640EF16448745150876C54 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				3875299D2F2F8CFA6C299D01 /* Domain.swift */,
+				633D5A87D481FD302CA63E1E /* Model.swift */,
+				C28C7BA29CE5FE0F8751460A /* Persistence.swift */,
+			);
+			path = Data;
+			sourceTree = "<group>";
+		};
+		79C63DCB90E357DA24B85B2D /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				C747C5B5B9A91CBC25016470 /* CameraViews.swift */,
+				7AE854CC3479F672BBE21B74 /* PhoneRootView.swift */,
+			);
+			path = iOS;
+			sourceTree = "<group>";
+		};
+		A071EB3CD3B1045FFD85FBE8 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				D94715E8A9493E46DF3567BC /* AppState.swift */,
+				46614C81F0566FD5B8AB5023 /* RekvizitApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		C96737D10E32016F045A0400 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				020E4D721446CAFFB1B0846E /* HomeView.swift */,
+				70A5F430E0449610E50E1D52 /* PhotoViews.swift */,
+				60AD02CBE7BA5D2EEC15E954 /* ProjectSheets.swift */,
+				6C52326FF45AE8A4AB5A43E2 /* PurchasesView.swift */,
+				A5D8D58F3D01A891B3C7E294 /* ReceiptEditorView.swift */,
+				B131B8187768F8A809EC2A13 /* ReceiptsView.swift */,
+				154DCB1B5B73124629D92653 /* ReportsView.swift */,
+				0C77FC1C400DDDB9D57B5FA1 /* SettingsView.swift */,
+				C946A454EB9FB8795D2DEC03 /* Theme.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		CB5FECC58E400F109EBF88DA /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B4D283158F46803D338651D1 /* BackupService.swift */,
+				DF22E764FE6C5570FB84CCEF /* ImageTools.swift */,
+				4C2D575C2447E55E1340924B /* Money.swift */,
+				24D6D833984D67E3800BA70C /* OCRService.swift */,
+				8CF207614402AAB2019BCA06 /* PDFBuilder.swift */,
+				D38542D5491C24E2F5503E08 /* ReceiptParser.swift */,
+				08E7BDC906F34B3CBE84F685 /* ReportData.swift */,
+				A29BE9946502461B1A3D6443 /* XLSXBuilder.swift */,
+				A170E8F08043F3D1FA76CDBF /* ZipWriter.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		E034BD6E55C4E41A2AAD615E /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				FD0306135D0CD01C02958E15 /* Assets.xcassets */,
+				94EDDA3C4E7C999065C369D6 /* Info-iOS.plist */,
+				781CCC7D004A531F621D8B30 /* Info-macOS.plist */,
+				18DE864D503B1148600E87E8 /* Local-iOS.entitlements */,
+				954EB0215F867CD3F6EF47D3 /* Local-macOS.entitlements */,
+				07AEF4688FF799A8204AACDA /* Rekvizit-iOS.entitlements */,
+				6E76E41E372733890CD115CA /* Rekvizit-macOS.entitlements */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		F08B928FD47CDC62052350B3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AF0A46C58B60A69450913DCC /* Rekvizit-iOS.app */,
+				F9B6A3C5DF10CA158FC08EC6 /* Rekvizit-macOS.app */,
+				053621F54A9147617E354633 /* RekvizitTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0510D9F3FF9AAB74FFF4678B /* Rekvizit-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AB24AD8D86DBC2ECF880629A /* Build configuration list for PBXNativeTarget "Rekvizit-iOS" */;
+			buildPhases = (
+				D34185B2722A4F5F2F32CEC6 /* Sources */,
+				D08FCB1373B29EEE791167FA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Rekvizit-iOS";
+			packageProductDependencies = (
+			);
+			productName = "Rekvizit-iOS";
+			productReference = AF0A46C58B60A69450913DCC /* Rekvizit-iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		245D33FEBD034C89B9A9193F /* RekvizitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 10FF0C4CB366D5EA53C8E2CA /* Build configuration list for PBXNativeTarget "RekvizitTests" */;
+			buildPhases = (
+				17F54A8EFCC98EB64F9DB977 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9B8E90CF98199494F1CF21E9 /* PBXTargetDependency */,
+			);
+			name = RekvizitTests;
+			packageProductDependencies = (
+			);
+			productName = RekvizitTests;
+			productReference = 053621F54A9147617E354633 /* RekvizitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		681FCD37D29B722BB078B273 /* Rekvizit-macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C94C3A5FB85A275F8A8C3847 /* Build configuration list for PBXNativeTarget "Rekvizit-macOS" */;
+			buildPhases = (
+				5637DD66F72FD2B31712D3B8 /* Sources */,
+				D3C14590A7500E7CFA071B94 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Rekvizit-macOS";
+			packageProductDependencies = (
+			);
+			productName = "Rekvizit-macOS";
+			productReference = F9B6A3C5DF10CA158FC08EC6 /* Rekvizit-macOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		4A4657F1593244F9A5C3B24B /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					0510D9F3FF9AAB74FFF4678B = {
+						DevelopmentTeam = "";
+					};
+					245D33FEBD034C89B9A9193F = {
+						DevelopmentTeam = "";
+					};
+					681FCD37D29B722BB078B273 = {
+						DevelopmentTeam = "";
+					};
+				};
+			};
+			buildConfigurationList = B99F959518EEDCA37FFB730E /* Build configuration list for PBXProject "Rekvizit" */;
+			developmentRegion = ru;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				ru,
+			);
+			mainGroup = 12B0C44167C4DB8AE19B6939;
+			minimizedProjectReferenceProxies = 1;
+			productRefGroup = F08B928FD47CDC62052350B3 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0510D9F3FF9AAB74FFF4678B /* Rekvizit-iOS */,
+				681FCD37D29B722BB078B273 /* Rekvizit-macOS */,
+				245D33FEBD034C89B9A9193F /* RekvizitTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D08FCB1373B29EEE791167FA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9D83F4736A5160E9013B7AC7 /* Assets.xcassets in Resources */,
+				FB35A4DB3874EE343EE0A2A0 /* Info-macOS.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D3C14590A7500E7CFA071B94 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				22E9B0C4D0208AE1DDACB709 /* Assets.xcassets in Resources */,
+				95BC1CD2DD2A45C65C5D0176 /* Info-iOS.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		17F54A8EFCC98EB64F9DB977 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2EB8FF75B68E99C19904C25D /* CoreTests.swift in Sources */,
+				C2A628DFC243FC12A4AD7881 /* ParserTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5637DD66F72FD2B31712D3B8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5509F7D5AF9F1529AF859C6F /* AppState.swift in Sources */,
+				B8BAB9615699020158870E8E /* BackupService.swift in Sources */,
+				4585FC2076C4D47CABAE16EB /* Domain.swift in Sources */,
+				8B38B92C7AB5ECE2B635B820 /* HomeView.swift in Sources */,
+				08C4C6CC6D29C13AB58502B3 /* ImageTools.swift in Sources */,
+				775A792217C458A0BC48AA0D /* MacRootView.swift in Sources */,
+				87318A80261C4EBD144A71ED /* MacWorkspace.swift in Sources */,
+				C4BBAEA9B9B17855073B70F2 /* Model.swift in Sources */,
+				F86C9C4F457EAC62613B3C54 /* Money.swift in Sources */,
+				E4A1F4CC82A7ADBBA1F3A3EE /* OCRService.swift in Sources */,
+				EEA51774D6135BF60FF7B645 /* PDFBuilder.swift in Sources */,
+				1533202797564625826FE7A6 /* Persistence.swift in Sources */,
+				3BF6A8B0B983FBDC2F592932 /* PhotoViews.swift in Sources */,
+				7B061A7FA98E131BC06CE032 /* ProjectSheets.swift in Sources */,
+				1CF22338CE9E8A23A47D5225 /* PurchasesView.swift in Sources */,
+				44AEFA982282EA7CFA70A8BD /* ReceiptEditorView.swift in Sources */,
+				20353E8033F99893947DA87D /* ReceiptParser.swift in Sources */,
+				DB2603D0D5A5A7650CA547E0 /* ReceiptsView.swift in Sources */,
+				6ADE837FFA6D83DAD97808E9 /* RekvizitApp.swift in Sources */,
+				7B9E52552FAF6DEBC73DC87C /* ReportData.swift in Sources */,
+				956B2E314659B988A0DF0701 /* ReportsView.swift in Sources */,
+				B0B0616D0DC296693A0D8B86 /* SettingsView.swift in Sources */,
+				BB6B259AA65D1DD0E7B61AC2 /* Theme.swift in Sources */,
+				97FF0EF826E70784DFE9E3CA /* XLSXBuilder.swift in Sources */,
+				2105A380331B8639EC20CE84 /* ZipWriter.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D34185B2722A4F5F2F32CEC6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BEA09F8FF4147EC7C4BD70E6 /* AppState.swift in Sources */,
+				66620F7B645127F0048DAC15 /* BackupService.swift in Sources */,
+				D09A90AF564B00F559E2DF31 /* CameraViews.swift in Sources */,
+				13B04191D2252A6B14235A8B /* Domain.swift in Sources */,
+				AE2AA4E7069CA3A9E75133DB /* HomeView.swift in Sources */,
+				B5333683AA39106A3430F5B1 /* ImageTools.swift in Sources */,
+				BCD4AC0C2C9DEC0B9617FA59 /* Model.swift in Sources */,
+				432989183684844FA9937F52 /* Money.swift in Sources */,
+				E34B386F4657D0C80CB99246 /* OCRService.swift in Sources */,
+				CE0E40FFE7093D1E73608AF7 /* PDFBuilder.swift in Sources */,
+				3D7800830BF2D75201C6B2D2 /* Persistence.swift in Sources */,
+				1F51A2612F73CDDC6344AB64 /* PhoneRootView.swift in Sources */,
+				DAC4E885F97F3388B4EFB98B /* PhotoViews.swift in Sources */,
+				880D68893DBFD90F064706BA /* ProjectSheets.swift in Sources */,
+				C5C671A7897C57CA11E48F3B /* PurchasesView.swift in Sources */,
+				8F25E96ECE7D9815863B4926 /* ReceiptEditorView.swift in Sources */,
+				385332BEEC559A01A7BBDBA4 /* ReceiptParser.swift in Sources */,
+				BFE099F0D58F7612FD4DF1B5 /* ReceiptsView.swift in Sources */,
+				C8B1B407A6C53D391DE4B93F /* RekvizitApp.swift in Sources */,
+				376E103F35B9C178804DBB31 /* ReportData.swift in Sources */,
+				6D6CB073643D706639E4977E /* ReportsView.swift in Sources */,
+				2C1711A74864254AE0F32570 /* SettingsView.swift in Sources */,
+				3D7A860E70AC29491C10505A /* Theme.swift in Sources */,
+				BF65A41D0C41E46284859E74 /* XLSXBuilder.swift in Sources */,
+				6AF5C985C2F21DE2E4269E94 /* ZipWriter.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9B8E90CF98199494F1CF21E9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 681FCD37D29B722BB078B273 /* Rekvizit-macOS */;
+			targetProxy = C29BECA6BDA1992335CEF278 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0017E236740B82094E568475 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "Resources/Rekvizit-macOS.entitlements";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "Resources/Info-macOS.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		23216F9B0ACF90B217DEAF7F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "Resources/Rekvizit-iOS.entitlements";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = "Resources/Info-iOS.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Реквизит";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		260FD94145A42D7A25CE125E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ru.desingerkino.rekvizit.tests;
+				PRODUCT_MODULE_NAME = RekvizitTests;
+				PRODUCT_NAME = RekvizitTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Rekvizit.app/Contents/MacOS/Rekvizit";
+			};
+			name = Release;
+		};
+		2C9D96C53794F9147D5AA120 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "Resources/Rekvizit-iOS.entitlements";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = "Resources/Info-iOS.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Реквизит";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		30B134E490E8E1B898390306 /* Local */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.desingerkino.rekvizit;
+				PRODUCT_MODULE_NAME = Rekvizit;
+				PRODUCT_NAME = Rekvizit;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG LOCAL_ONLY";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Local;
+		};
+		3E8CE5C4DBEF8664B177BE18 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "Resources/Rekvizit-macOS.entitlements";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "Resources/Info-macOS.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		4DD09AA588C2C30F8CF21716 /* Local */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "Resources/Local-macOS.entitlements";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "Resources/Info-macOS.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				SDKROOT = macosx;
+			};
+			name = Local;
+		};
+		5A013F140EBC15F1E11E7465 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ru.desingerkino.rekvizit.tests;
+				PRODUCT_MODULE_NAME = RekvizitTests;
+				PRODUCT_NAME = RekvizitTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Rekvizit.app/Contents/MacOS/Rekvizit";
+			};
+			name = Debug;
+		};
+		7089C8BFC3E9180AF8722717 /* Local */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_ALLOWED = NO;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ru.desingerkino.rekvizit.tests;
+				PRODUCT_MODULE_NAME = RekvizitTests;
+				PRODUCT_NAME = RekvizitTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Rekvizit.app/Contents/MacOS/Rekvizit";
+			};
+			name = Local;
+		};
+		89C9DEDED9B05D7C31B9DFC6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.desingerkino.rekvizit;
+				PRODUCT_MODULE_NAME = Rekvizit;
+				PRODUCT_NAME = Rekvizit;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		A2ED7CA8C4ADCDAB251981CC /* Local */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "Resources/Local-iOS.entitlements";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = "Resources/Info-iOS.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Реквизит";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Local;
+		};
+		A8F530F283C155C9D8582E15 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.desingerkino.rekvizit;
+				PRODUCT_MODULE_NAME = Rekvizit;
+				PRODUCT_NAME = Rekvizit;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		10FF0C4CB366D5EA53C8E2CA /* Build configuration list for PBXNativeTarget "RekvizitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A013F140EBC15F1E11E7465 /* Debug */,
+				7089C8BFC3E9180AF8722717 /* Local */,
+				260FD94145A42D7A25CE125E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		AB24AD8D86DBC2ECF880629A /* Build configuration list for PBXNativeTarget "Rekvizit-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				23216F9B0ACF90B217DEAF7F /* Debug */,
+				A2ED7CA8C4ADCDAB251981CC /* Local */,
+				2C9D96C53794F9147D5AA120 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B99F959518EEDCA37FFB730E /* Build configuration list for PBXProject "Rekvizit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A8F530F283C155C9D8582E15 /* Debug */,
+				30B134E490E8E1B898390306 /* Local */,
+				89C9DEDED9B05D7C31B9DFC6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C94C3A5FB85A275F8A8C3847 /* Build configuration list for PBXNativeTarget "Rekvizit-macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0017E236740B82094E568475 /* Debug */,
+				4DD09AA588C2C30F8CF21716 /* Local */,
+				3E8CE5C4DBEF8664B177BE18 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 4A4657F1593244F9A5C3B24B /* Project object */;
+}
