@@ -23,13 +23,17 @@ struct ZipWriter {
 
     private static func dos(_ date: Date) -> (UInt16, UInt16) {
         let c = Calendar(identifier: .gregorian).dateComponents(in: TimeZone.current, from: date)
-        let year = max(1980, c.year ?? 1980)
-        let time = UInt16(((c.hour ?? 0) << 11) | ((c.minute ?? 0) << 5) | ((c.second ?? 0) / 2))
-        let day = UInt16(((year - 1980) << 9) | ((c.month ?? 1) << 5) | (c.day ?? 1))
-        return (time, day)
+        let year = UInt16(max(1980, c.year ?? 1980) - 1980)
+        let hour = UInt16(c.hour ?? 0)
+        let minute = UInt16(c.minute ?? 0)
+        let second = UInt16((c.second ?? 0) / 2)
+        let month = UInt16(c.month ?? 1)
+        let day = UInt16(c.day ?? 1)
+        let time: UInt16 = (hour << 11) | (minute << 5) | second
+        let dateBits: UInt16 = (year << 9) | (month << 5) | day
+        return (time, dateBits)
     }
 
-    private mutating func put16(_ v: UInt16, to d: inout Data) { d.append(UInt8(v & 0xFF)); d.append(UInt8(v >> 8)) }
     private func le16(_ v: UInt16) -> [UInt8] { [UInt8(v & 0xFF), UInt8(v >> 8)] }
     private func le32(_ v: UInt32) -> [UInt8] { [UInt8(v & 0xFF), UInt8((v >> 8) & 0xFF), UInt8((v >> 16) & 0xFF), UInt8(v >> 24)] }
 
