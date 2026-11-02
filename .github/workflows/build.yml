@@ -38,16 +38,46 @@ jobs:
           xcodebuild build -project Rekvizit.xcodeproj -scheme Rekvizit-iOS -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" 2>&1 | tee ios.log | grep -E "error:|BUILD" || true
           grep -q "BUILD SUCCEEDED" ios.log
-      - name: Сборка Mac (Release, без подписи)
+      - name: Проверить Excel независимым читателем (openpyxl)
+        run: |
+          pip3 install --break-system-packages openpyxl pillow >/dev/null 2>&1 || pip3 install openpyxl pillow >/dev/null 2>&1
+          python3 - <<'PY'
+          import openpyxl
+          wb = openpyxl.load_workbook('/tmp/rekvizit-samples/sample-report.xlsx')
+          print(wb.sheetnames)
+          for ws in wb.worksheets:
+              print(ws.title, ws.dimensions, 'images:', len(ws._images), 'merged:', len(ws.merged_cells.ranges))
+          assert wb.sheetnames == ['Сводный отчёт', 'Детализация расходов', 'Реестр чеков', 'Фотографии чеков']
+          assert len(wb['Детализация расходов']._images) == 3
+          assert len(wb['Фотографии чеков']._images) == 4
+          PY
+      - name: Сборка Mac (универсальная, для запуска без подписи Apple)
         run: |
           set -o pipefail
-          xcodebuild build -project Rekvizit.xcodeproj -scheme Rekvizit-macOS -configuration Release -destination 'generic/platform=macOS' \
-            -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" 2>&1 | tail -5
-          cd build/Build/Products/Release && ditto -c -k --keepParent Rekvizit.app "$GITHUB_WORKSPACE/Rekvizit-macOS-unsigned.zip"
+          xcodebuild build -project Rekvizit.xcodeproj -scheme Rekvizit-macOS -configuration Local -destination 'generic/platform=macOS' \
+            -derivedDataPath build ONLY_ACTIVE_ARCH=NO ARCHS="arm64 x86_64" CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=YES CODE_SIGNING_ALLOWED=YES 2>&1 | tail -5
+          cd build/Build/Products/Local && lipo -archs Rekvizit.app/Contents/MacOS/Rekvizit && codesign -dv Rekvizit.app 2>&1 | head -3
+          ditto -c -k --keepParent Rekvizit.app "$GITHUB_WORKSPACE/Rekvizit-macOS-local.zip"
+          # дымовой запуск: приложение должно открыться и не упасть
+          ./Rekvizit.app/Contents/MacOS/Rekvizit > "$GITHUB_WORKSPACE/launch.log" 2>&1 &
+          APP_PID=$!
+          sleep 10
+          screencapture -x "$GITHUB_WORKSPACE/mac-launch.png" || true
+          if kill -0 $APP_PID 2>/dev/null; then echo "Приложение запущено и работает"; kill $APP_PID; else echo "ПРИЛОЖЕНИЕ УПАЛО ПРИ ЗАПУСКЕ"; cat "$GITHUB_WORKSPACE/launch.log"; exit 1; fi
       - uses: actions/upload-artifact@v4
         with:
-          name: Rekvizit-macOS-unsigned
-          path: Rekvizit-macOS-unsigned.zip
+          name: Rekvizit-macOS-and-samples
+          path: |
+            Rekvizit-macOS-local.zip
+            mac-launch.png
+            launch.log
+            /tmp/rekvizit-samples/*
+      - name: Выложить сборку и примеры в релиз
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view latest >/dev/null 2>&1 || gh release create latest --title "Последняя сборка" --notes "Автоматическая сборка из ветки main. Mac-приложение без подписи Apple (без iCloud) и примеры отчётов."
+          gh release upload latest Rekvizit-macOS-local.zip /tmp/rekvizit-samples/sample-report.xlsx /tmp/rekvizit-samples/sample-report.pdf --clobber
       - name: Сохранить сгенерированный Xcode-проект в репозиторий
         run: |
           git config user.name "github-actions"

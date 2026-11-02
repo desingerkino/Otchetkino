@@ -2,6 +2,7 @@ import XCTest
 import CoreData
 import CoreGraphics
 import ImageIO
+import CoreText
 @testable import Rekvizit
 
 final class CoreTests: XCTestCase {
@@ -20,6 +21,67 @@ final class CoreTests: XCTestCase {
     @MainActor
     func makeProject(_ p: PersistenceController) -> RProject {
         DataOps.createProject(p.viewContext, name: "Тестовый фильм", holder: "Миша Черкасов", issued: 5_000_000)
+    }
+
+
+    /// Рисует «термочек» с текстом — для проверки OCR и красивых примеров в отчёте.
+    static func renderReceipt(lines: [String], width: Int = 900) -> Data {
+        let lineH = 64, h = lines.count * lineH + 120
+        let cs = CGColorSpaceCreateDeviceRGB()
+        let ctx = CGContext(data: nil, width: width, height: h, bitsPerComponent: 8, bytesPerRow: 0, space: cs, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)!
+        ctx.setFillColor(CGColor(gray: 1, alpha: 1)); ctx.fill(CGRect(x: 0, y: 0, width: width, height: h))
+        for (i, l) in lines.enumerated() {
+            let font = CTFontCreateWithName("Helvetica" as CFString, 38, nil)
+            let attrs: [NSAttributedString.Key: Any] = [NSAttributedString.Key(kCTFontAttributeName as String): font,
+                                                        NSAttributedString.Key(kCTForegroundColorAttributeName as String): CGColor(gray: 0.05, alpha: 1)]
+            let line = CTLineCreateWithAttributedString(NSAttributedString(string: l, attributes: attrs))
+            ctx.textPosition = CGPoint(x: 40, y: CGFloat(h - 80 - i * lineH))
+            CTLineDraw(line, ctx)
+        }
+        return ImageTools.jpegData(from: ctx.makeImage()!, quality: 0.92)!
+    }
+
+    static let sampleLines = ["ООО \"ДНС Ритейл\"", "КАССОВЫЙ ЧЕК / ПРИХОД", "ИНН 2540167061", "Стиральная машина LG 1 x 18500.00 = 18500.00",
+                              "Шнур питания", "2 x 250.00 = 500.00", "ИТОГО 19000.00", "НАЛИЧНЫМИ 19000.00", "26.01.2026 14:35"]
+
+    func testOCRReadsRenderedReceipt() throws {
+        let data = Self.renderReceipt(lines: Self.sampleLines)
+        let lines = OCRService.recognizeSync(data)
+        print("OCR LINES:\n" + lines.joined(separator: "\n"))
+        XCTAssertFalse(lines.isEmpty, "Vision ничего не распознал")
+        let parsed = ReceiptParser.parse(lines: lines)
+        XCTAssertEqual(parsed.totalKop, 1_900_000, "итог не распознан: \(lines)")
+        XCTAssertEqual(parsed.inn, "2540167061")
+        XCTAssertNotNil(parsed.date)
+    }
+
+    @MainActor
+    func testSampleReportForInspection() throws {
+        let photo1 = ImageTools.reportImage(from: Self.renderReceipt(lines: Self.sampleLines))!
+        let photo2 = ImageTools.reportImage(from: Self.renderReceipt(lines: ["МАГАЗИН «Всё для дома»", "ИНН 7701234567", "Лампа настольная", "1 x 1290.00 = 1290.00", "ИТОГО 1290.00", "27.01.2026 11:02"]))!
+        let tall = ImageTools.reportImage(from: Self.renderReceipt(lines: (0..<60).map { "Позиция \($0 + 1)   \($0 * 13 % 97).00" }))!
+        func item(_ t: String, _ c: String, _ s: String, _ a: Int64, _ p: String = "") -> ReportSnapshot.Item { .init(title: t, category: c, scenes: s, amount: a, quantity: 1, purpose: p) }
+        let d1 = Calendar.current.date(from: DateComponents(year: 2026, month: 1, day: 26, hour: 12))!
+        let d2 = Calendar.current.date(from: DateComponents(year: 2026, month: 1, day: 27, hour: 12))!
+        let receipts: [ReportSnapshot.Receipt] = [
+            .init(number: 1, date: d1, store: "ООО \"ДНС Ритейл\"", inn: "2540167061", comment: "", noReceipt: false,
+                  items: [item("Стиральная машина LG", "Бытовая техника", "12, 14, 18", 1_850_000, "Реквизит для квартиры главного героя"), item("Шнур питания", "Реквизит", "12", 50_000)],
+                  photos: [photo1, photo2]),
+            .init(number: 2, date: d2, store: "Всё для дома", inn: "7701234567", comment: "", noReceipt: false, items: [item("Лампа настольная", "Мебель", "03", 129_000)], photos: [photo2]),
+            .init(number: 3, date: d2, store: "Рынок", inn: "", comment: "оплачено наличными, чека нет", noReceipt: true, items: [item("Краска акриловая", "Расходные материалы", "04", 45_000, "Состарить стену")], photos: []),
+            .init(number: 4, date: d2, store: "Длинный чек", inn: "", comment: "", noReceipt: false, items: [item("Продукты для съёмки", "Продукты", "01", 76_500)], photos: [tall])
+        ]
+        let spent: Int64 = 1_850_000 + 50_000 + 129_000 + 45_000 + 76_500
+        let snap = ReportSnapshot(projectName: "Пример: фильм «Вася»", holder: "Черкасов Михаил", periodText: "26.01.2026 — 27.01.2026",
+                                  issued: 5_000_000, returned: 100_000, spent: spent, balance: 5_000_000 - spent - 100_000, purchaseCount: 5, receiptCount: 3, noReceiptCount: 1,
+                                  generatedAt: Date(), receipts: receipts,
+                                  categories: [("Бытовая техника", 1_850_000), ("Мебель", 129_000), ("Продукты", 76_500), ("Реквизит", 50_000), ("Расходные материалы", 45_000)],
+                                  advances: [(d1, 0, 5_000_000, "Первоначальная выдача"), (d2, 1, 100_000, "Возврат остатка")])
+        let dir = URL(fileURLWithPath: "/tmp/rekvizit-samples", isDirectory: true)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        try XLSXBuilder.build(snap).write(to: dir.appendingPathComponent("sample-report.xlsx"))
+        try PDFBuilder.build(snap).write(to: dir.appendingPathComponent("sample-report.pdf"))
+        try Self.renderReceipt(lines: Self.sampleLines).write(to: dir.appendingPathComponent("sample-receipt.jpg"))
     }
 
     // MARK: ZIP
@@ -128,7 +190,6 @@ final class CoreTests: XCTestCase {
         }
         XCTAssertTrue(String(decoding: files["xl/worksheets/sheet2.xml"]!, as: UTF8.self).contains("Стиральная &lt;машина&gt; &amp; Ко"))
         // сохраним для ручной проверки как артефакт CI
-        try? data.write(to: URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("test-report.xlsx"))
         XCTAssertEqual(XLSXBuilder.serial(Calendar(identifier: .gregorian).date(from: DateComponents(year: 2026, month: 1, day: 26, hour: 12))!), 46048)
     }
 
