@@ -29,9 +29,9 @@ enum ReceiptParser {
         "ПРИХОД", "РН ККТ", "ЗН ККТ", "ТЕЛ", "АДРЕС", "МЕСТО РАСЧ", "ВИД ОПЕРАЦИИ", "ЧЕК №", "ПРИЗНАК", "ПОКУПАТЕЛЬ", "ВОЗВРАТ ПРИХОДА",
         "СЧЕТ", "СЧЁТ", "ТЕРМИНАЛ", "КАРТА", "VISA", "MASTERCARD", "МИР "
     ]
-    private static let amountRegex = try! NSRegularExpression(pattern: #"(?<![\d.,])(\d{1,3}(?:[ \u{00A0}]\d{3})+|\d+)[.,](\d{2})(?![\d])"#)
+    private static let amountRegex = try! NSRegularExpression(pattern: #"(?<![\d.,])(\d{1,3}(?:[ \x{00A0}]\d{3})+|\d+)[.,](\d{2})(?![\d])"#)
     private static let qtyRegex = try! NSRegularExpression(
-        pattern: #"(\d+(?:[.,]\d+)?)\s*(?:шт\.?|кг|г|л|м|уп\.?)?\s*[xхXХ*×]\s*(\d{1,3}(?:[ \u{00A0}]\d{3})*[.,]\d{2}|\d+[.,]\d{2}|\d+)"#)
+        pattern: #"(\d+(?:[.,]\d+)?)\s*(?:шт\.?|кг|г|л|м|уп\.?)?\s*[xхXХ*×]\s*(\d{1,3}(?:[ \x{00A0}]\d{3})*[.,]\d{2}|\d+[.,]\d{2}|\d+)"#)
 
     static func parse(lines rawLines: [String], now: Date = Date()) -> ParsedReceipt {
         let lines = rawLines.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
