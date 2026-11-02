@@ -18,7 +18,14 @@ jobs:
       - name: Установить XcodeGen
         run: brew install xcodegen
       - name: Сгенерировать проект
-        run: xcodegen generate
+        run: |
+          xcodegen generate
+          # Xcode 15 (macOS Ventura) читает проекты формата не новее 60
+          sed -i '' -E 's/objectVersion = [0-9]+;/objectVersion = 56;/' Rekvizit.xcodeproj/project.pbxproj
+          sed -i '' -E 's/compatibilityVersion = "[^"]*";/compatibilityVersion = "Xcode 14.0";/' Rekvizit.xcodeproj/project.pbxproj
+          sed -i '' -E '/preferredProjectObjectVersion/d' Rekvizit.xcodeproj/project.pbxproj
+          head -12 Rekvizit.xcodeproj/project.pbxproj
+          grep -n "PBXFileSystemSynchronized" Rekvizit.xcodeproj/project.pbxproj | head -3 || true
       - name: Тесты (macOS)
         run: |
           set -o pipefail

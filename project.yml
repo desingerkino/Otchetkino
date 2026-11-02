@@ -6,6 +6,7 @@ options:
     macOS: "13.0"
   createIntermediateGroups: true
   developmentLanguage: ru
+  xcodeVersion: "15.0"
 configs:
   Debug: debug
   Release: release
