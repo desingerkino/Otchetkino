@@ -174,12 +174,12 @@ enum FileImport {
 enum PhotoSourceKind { case scan, other }
 
 /// Меню «добавить фото». На iPhone: сканер документов, камера, галерея, файлы. На Mac: выбор файлов.
-struct PhotoSourceMenu<Label: View>: View {
+struct PhotoSourceMenu<Content: View>: View {
     var inline = false
     var manualTitle: String? = nil
     var onManual: (() -> Void)? = nil
     let onPicked: ([Data], PhotoSourceKind) -> Void
-    @ViewBuilder var label: () -> Label
+    @ViewBuilder var label: () -> Content
 
     @State private var showFiles = false
     #if os(iOS)
@@ -272,12 +272,12 @@ enum AddFlow {
 }
 
 /// Большая кнопка «+ Добавить покупку» с выбором источника и переходом к проверке.
-struct AddPurchaseButton<Label: View>: View {
+struct AddPurchaseButton<Content: View>: View {
     let project: RProject
     @Environment(\.managedObjectContext) private var ctx
     @EnvironmentObject private var app: AppState
     @State private var editing: EditTarget?
-    @ViewBuilder var label: () -> Label
+    @ViewBuilder var label: () -> Content
 
     var body: some View {
         PhotoSourceMenu(manualTitle: "Без чека — вручную", onManual: {

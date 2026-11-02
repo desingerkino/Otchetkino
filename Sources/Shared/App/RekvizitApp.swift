@@ -17,7 +17,33 @@ struct RekvizitApp: App {
                 .environmentObject(OCRCoordinator.shared)
                 .tint(Color.rkAccent)
         }
+        #if os(macOS)
+        .defaultSize(width: 1360, height: 820)
+        .commands {
+            CommandGroup(replacing: .newItem) {
+                Button("Новая покупка") { AppCommand.post(.newPurchase) }.keyboardShortcut("n")
+                Button("Загрузить чеки из файлов…") { AppCommand.post(.importReceipts) }.keyboardShortcut("i")
+                Divider()
+                Button("Отчёт Excel…") { AppCommand.post(.exportExcel) }.keyboardShortcut("e")
+                Button("Отчёт PDF…") { AppCommand.post(.exportPDF) }.keyboardShortcut("e", modifiers: [.command, .shift])
+                Button("Печать отчёта…") { AppCommand.post(.printReport) }.keyboardShortcut("p")
+            }
+            CommandMenu("Покупки") {
+                Button("Увеличить фото чека") { AppCommand.post(.openPhoto) }.keyboardShortcut("y")
+                Button("Изменить выбранные…") { AppCommand.post(.bulkEdit) }.keyboardShortcut("b", modifiers: [.command, .shift])
+                Button("Фильтры…") { AppCommand.post(.filters) }.keyboardShortcut("f", modifiers: [.command, .option])
+                Button("Деньги: выдача…") { AppCommand.post(.issueMoney) }.keyboardShortcut("m")
+                Button("Настройки проекта…") { AppCommand.post(.settings) }.keyboardShortcut(",")
+            }
+        }
+        #endif
     }
+}
+
+enum AppCommand: String {
+    case newPurchase, importReceipts, exportExcel, exportPDF, printReport, openPhoto, bulkEdit, filters, issueMoney, settings
+    var name: Notification.Name { Notification.Name("rk.cmd." + rawValue) }
+    static func post(_ c: AppCommand) { NotificationCenter.default.post(name: c.name, object: nil) }
 }
 
 struct RootView: View {
