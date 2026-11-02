@@ -4,3 +4,6 @@ DerivedData/
 *.log
 xcuserdata/
 Rekvizit-macOS-local.zip
+Rekvizit-iOS-unsigned.ipa
+ipa/
+build-ios/

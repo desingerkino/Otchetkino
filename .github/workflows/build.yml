@@ -64,6 +64,14 @@ jobs:
           sleep 10
           screencapture -x "$GITHUB_WORKSPACE/mac-launch.png" || true
           if kill -0 $APP_PID 2>/dev/null; then echo "Приложение запущено и работает"; kill $APP_PID; else echo "ПРИЛОЖЕНИЕ УПАЛО ПРИ ЗАПУСКЕ"; cat "$GITHUB_WORKSPACE/launch.log"; exit 1; fi
+      - name: Сборка iPhone .ipa (без подписи, для установки через Sideloadly/AltStore)
+        run: |
+          set -o pipefail
+          xcodebuild build -project Rekvizit.xcodeproj -scheme Rekvizit-iOS -configuration Local -destination 'generic/platform=iOS' \
+            -derivedDataPath build-ios CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" 2>&1 | tail -3
+          mkdir -p ipa/Payload && cp -R build-ios/Build/Products/Local-iphoneos/Rekvizit.app ipa/Payload/
+          (cd ipa && zip -qr "$GITHUB_WORKSPACE/Rekvizit-iOS-unsigned.ipa" Payload)
+          ls -la Rekvizit-iOS-unsigned.ipa
       - uses: actions/upload-artifact@v4
         with:
           name: Rekvizit-macOS-and-samples
@@ -77,7 +85,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release view latest >/dev/null 2>&1 || gh release create latest --title "Последняя сборка" --notes "Автоматическая сборка из ветки main. Mac-приложение без подписи Apple (без iCloud) и примеры отчётов."
-          gh release upload latest Rekvizit-macOS-local.zip /tmp/rekvizit-samples/sample-report.xlsx /tmp/rekvizit-samples/sample-report.pdf --clobber
+          gh release upload latest Rekvizit-iOS-unsigned.ipa Rekvizit-macOS-local.zip /tmp/rekvizit-samples/sample-report.xlsx /tmp/rekvizit-samples/sample-report.pdf --clobber
       - name: Сохранить сгенерированный Xcode-проект в репозиторий
         run: |
           git config user.name "github-actions"
