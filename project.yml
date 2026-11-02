@@ -1,0 +1,135 @@
+name: Rekvizit
+options:
+  bundleIdPrefix: ru.desingerkino
+  deploymentTarget:
+    iOS: "16.0"
+    macOS: "13.0"
+  createIntermediateGroups: true
+  developmentLanguage: ru
+configs:
+  Debug: debug
+  Release: release
+  Local: debug
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    PRODUCT_NAME: Rekvizit
+    PRODUCT_MODULE_NAME: Rekvizit
+    PRODUCT_BUNDLE_IDENTIFIER: ru.desingerkino.rekvizit
+    DEVELOPMENT_TEAM: ""
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+  configs:
+    Local:
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: "DEBUG LOCAL_ONLY"
+targets:
+  Rekvizit-iOS:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources/Shared
+      - path: Sources/iOS
+      - path: Resources
+    settings:
+      base:
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        INFOPLIST_KEY_CFBundleDisplayName: Реквизит
+        CODE_SIGN_ENTITLEMENTS: Resources/Rekvizit-iOS.entitlements
+      configs:
+        Local:
+          CODE_SIGN_ENTITLEMENTS: Resources/Local-iOS.entitlements
+    info:
+      path: Resources/Info-iOS.plist
+      properties:
+        CFBundleDisplayName: Реквизит
+        CFBundleName: Реквизит
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIBackgroundModes: [remote-notification]
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        NSCameraUsageDescription: Камера нужна, чтобы фотографировать чеки и товары.
+        NSPhotoLibraryUsageDescription: Доступ к фото нужен, чтобы прикреплять фотографии чеков.
+        ITSAppUsesNonExemptEncryption: false
+  Rekvizit-macOS:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/Shared
+      - path: Sources/macOS
+      - path: Resources
+    settings:
+      base:
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        COMBINE_HIDPI_IMAGES: YES
+        CODE_SIGN_ENTITLEMENTS: Resources/Rekvizit-macOS.entitlements
+      configs:
+        Local:
+          CODE_SIGN_ENTITLEMENTS: Resources/Local-macOS.entitlements
+    info:
+      path: Resources/Info-macOS.plist
+      properties:
+        CFBundleDisplayName: Реквизит
+        CFBundleName: Реквизит
+        LSMinimumSystemVersion: "13.0"
+        LSApplicationCategoryType: public.app-category.finance
+        NSHumanReadableCopyright: "© Реквизит"
+        NSPrincipalClass: NSApplication
+        ITSAppUsesNonExemptEncryption: false
+  RekvizitTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests
+    dependencies:
+      - target: Rekvizit-macOS
+    settings:
+      base:
+        PRODUCT_NAME: RekvizitTests
+        PRODUCT_MODULE_NAME: RekvizitTests
+        PRODUCT_BUNDLE_IDENTIFIER: ru.desingerkino.rekvizit.tests
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGNING_ALLOWED: NO
+schemes:
+  Rekvizit-iOS:
+    build:
+      targets:
+        Rekvizit-iOS: all
+    run:
+      config: Debug
+    archive:
+      config: Release
+  Rekvizit-macOS:
+    build:
+      targets:
+        Rekvizit-macOS: all
+        RekvizitTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets: [RekvizitTests]
+    archive:
+      config: Release
+  Rekvizit-iOS-Local:
+    build:
+      targets:
+        Rekvizit-iOS: all
+    run:
+      config: Local
+  Rekvizit-macOS-Local:
+    build:
+      targets:
+        Rekvizit-macOS: all
+    run:
+      config: Local

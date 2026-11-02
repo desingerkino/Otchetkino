@@ -1,0 +1,49 @@
+name: Сборка и тесты
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Выбрать Xcode
+        run: |
+          ls /Applications | grep -i xcode || true
+          sudo xcode-select -s /Applications/Xcode_15.4.app || true
+          xcodebuild -version
+      - name: Установить XcodeGen
+        run: brew install xcodegen
+      - name: Сгенерировать проект
+        run: xcodegen generate
+      - name: Тесты (macOS)
+        run: |
+          set -o pipefail
+          xcodebuild test -project Rekvizit.xcodeproj -scheme Rekvizit-macOS -destination 'platform=macOS' \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" 2>&1 | tee test.log | grep -E "error:|warning: unre|Test Case|Executed|TEST (SUCCEEDED|FAILED)|BUILD" || true
+          grep -q "TEST SUCCEEDED" test.log
+      - name: Сборка iOS (симулятор)
+        run: |
+          set -o pipefail
+          xcodebuild build -project Rekvizit.xcodeproj -scheme Rekvizit-iOS -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" 2>&1 | tee ios.log | grep -E "error:|BUILD" || true
+          grep -q "BUILD SUCCEEDED" ios.log
+      - name: Сборка Mac (Release, без подписи)
+        run: |
+          set -o pipefail
+          xcodebuild build -project Rekvizit.xcodeproj -scheme Rekvizit-macOS -configuration Release -destination 'generic/platform=macOS' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" 2>&1 | tail -5
+          cd build/Build/Products/Release && ditto -c -k --keepParent Rekvizit.app "$GITHUB_WORKSPACE/Rekvizit-macOS-unsigned.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Rekvizit-macOS-unsigned
+          path: Rekvizit-macOS-unsigned.zip
+      - name: Сохранить сгенерированный Xcode-проект в репозиторий
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add -f Rekvizit.xcodeproj
+          if ! git diff --cached --quiet; then git commit -m "Обновить сгенерированный Rekvizit.xcodeproj [skip ci]" && git push; fi
