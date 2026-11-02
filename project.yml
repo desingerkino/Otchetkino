@@ -101,6 +101,8 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: ru.desingerkino.rekvizit.tests
         GENERATE_INFOPLIST_FILE: YES
         CODE_SIGNING_ALLOWED: NO
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Rekvizit.app/Contents/MacOS/Rekvizit"
+        BUNDLE_LOADER: "$(TEST_HOST)"
 schemes:
   Rekvizit-iOS:
     build:
