@@ -115,6 +115,9 @@ final class PersistenceController: ObservableObject {
     func save() {
         let ctx = viewContext
         guard ctx.hasChanges else { return }
+        for o in ctx.updatedObjects {
+            if let r = o as? RReceipt { r.updatedAt = Date() } else if let p = o as? RPurchase { p.receipt?.updatedAt = Date() }
+        }
         do { try ctx.save() } catch { print("Ошибка сохранения: \(error)") }
     }
 

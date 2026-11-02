@@ -113,7 +113,7 @@ enum ModelBuilder {
         } else {
             a.isOptional = true
         }
-        a.allowsExternalStorage = external
+        a.allowsExternalBinaryDataStorage = external
         return a
     }
     private static func str(_ n: String) -> NSAttributeDescription { attr(n, .stringAttributeType, def: "") }
