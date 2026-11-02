@@ -100,7 +100,7 @@ enum ReceiptParser {
         let skip = ["ЧЕК", "КАССОВЫЙ", "ДОБРО ПОЖАЛОВАТЬ", "ТОВАРНЫЙ", "ПРИХОД", "КАССИР", "СМЕНА", "ИНН", "ДАТА", "WWW", "HTTP", "ТЕЛ"]
         let head = Array(lines.prefix(10))
         func letters(_ s: String) -> Int { s.filter { $0.isLetter }.count }
-        func clean(_ s: String) -> String { s.trimmingCharacters(in: CharacterSet(charactersIn: " ,.;:*-_=\"'«»")) }
+        func clean(_ s: String) -> String { s.trimmingCharacters(in: CharacterSet(charactersIn: " ,.;:*-_=")) }
         // 1) строка с «ООО/ИП/…»
         if let l = head.first(where: { line in
             let u = line.uppercased(); return org.contains(where: { u.hasPrefix($0) || u.contains(" " + $0) }) && letters(line) >= 4

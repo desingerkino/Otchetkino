@@ -294,12 +294,11 @@ enum XLSXBuilder {
             // колонка «Фото чека»
             for rr in startRow..<r { sh.blank(rr, 9, S.center) }
             if let im = img {
-                sh.merge(startRow, 9, r - 1, 9)
+                if r - 1 > startRow { sh.merge(startRow, 9, r - 1, 9) }
                 media.append(im.data)
                 pics.append(Picture(mediaIndex: media.count, col0: 8, row0: startRow - 1,
                                     colOff: Int(((detailPhotoBoxW - boxW) / 2 + 4) * 9525), rowOff: 4 * 9525,
                                     cx: Int(boxW * 9525), cy: Int(boxH * 9525), name: "Чек №\(rec.number)"))
-                if rec.photos.count > 1 { sh.text(startRow, 9, "", S.center) }
             } else {
                 sh.text(startRow, 9, rec.noReceipt ? "Без чека" : "Фото нет", S.center)
                 if r - startRow > 1 { sh.merge(startRow, 9, r - 1, 9) }
