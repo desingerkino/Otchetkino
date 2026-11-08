@@ -28,6 +28,17 @@ enum StoreDirectory {
         return all(ctx).first { key($0.name) == k }
     }
 
+    /// Сколько чеков у каждого магазина (ключ — `key(name)`).
+    static func counts(_ ctx: NSManagedObjectContext) -> [String: Int] {
+        let req = NSFetchRequest<RReceipt>(entityName: "RReceipt")
+        var map: [String: Int] = [:]
+        for r in (try? ctx.fetch(req)) ?? [] {
+            let k = key(r.store)
+            if !k.isEmpty { map[k, default: 0] += 1 }
+        }
+        return map
+    }
+
     /// Подсказки по введённому началу: сначала начинающиеся с текста, затем содержащие; чаще используемые выше.
     static func suggestions(_ ctx: NSManagedObjectContext, for text: String, limit: Int = 6) -> [String] {
         let k = key(text)

@@ -80,7 +80,7 @@ final class AutosaveTests: XCTestCase {
             // 3. возвращаемся к первой: всё на месте
             XCTAssertEqual(first.purchaseList.first?.title, "Лампа")
             XCTAssertEqual(first.photoList.count, 1)
-            XCTAssertEqual(first.store, "АВИТО".lowercased() == "авито" ? first.store : "")
+            XCTAssertEqual(first.store, "авито")
             XCTAssertFalse(p.viewContext.hasChanges)
         }
         // 4. «закрыли и открыли приложение»
