@@ -33,10 +33,10 @@ struct RKTextField: View {
             .rkField(focused: focused, warn: warn)
             // Enter в многострочном поле (комментарий, назначение) — это перенос строки, а не создание покупки
             .onSubmit { if axis == .horizontal { commit(); enterAction?() } }
-            .onAppear {
-                text = value
-                if autofocus && value.isEmpty { DispatchQueue.main.async { focused = true } }
-            }
+            .onAppear { text = value }
+            // фокус ставится после появления поля в иерархии (задача запускается после первой отрисовки), без таймеров
+            // только для пустого поля новой позиции: выбор существующей покупки не должен отбирать фокус у таблицы
+            .task { if autofocus && value.isEmpty { focused = true } }
             .onChange(of: text) { _ in schedule() }
             .onChange(of: value) { new in if !focused && new != text { text = new } }
             .onChange(of: focused) { f in if !f { commit() } }

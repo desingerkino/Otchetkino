@@ -35,6 +35,7 @@ struct MacWorkspace: View {
     @StateObject private var reports = ReportController()
 
     @State private var selection = Set<PurchaseRow.ID>()
+    @State private var saveErrorText: String?
     @State private var selectedReceiptID: NSManagedObjectID?
     @State private var filter = PurchaseFilter()
     @State private var showFilters = false
@@ -123,6 +124,11 @@ struct MacWorkspace: View {
         .sheet(item: $viewerPhotos) { PhotoViewer(photos: $0.photos, index: 0) }
         .sheet(isPresented: $showPeriod) { periodSheet }
         .reportExporter(reports)
+        .alert("Не удалось сохранить покупку", isPresented: Binding(get: { saveErrorText != nil }, set: { if !$0 { saveErrorText = nil } })) {
+            Button("Понятно", role: .cancel) {}
+        } message: {
+            Text("Следующая позиция не создана, введённые данные сохранены в приложении. Причина: \(saveErrorText ?? ""). Исправьте и нажмите Enter ещё раз или ⌘S.")
+        }
         .alert(deleteQuestion(rows), isPresented: $confirmDelete) {
             Button("Отмена", role: .cancel) {}
             Button("Удалить", role: .destructive) { deleteSelected(rows) }
@@ -223,13 +229,20 @@ struct MacWorkspace: View {
                                 )
                         }
                     } header: {
-                        Text(Fmt.dayHeader.string(from: g.day).uppercased())
-                            .font(.caption.weight(.bold)).foregroundStyle(Color.rkAccent)
-                            .padding(.top, 10).padding(.bottom, 2)
+                        VStack(spacing: 0) {
+                            Color.clear.frame(height: 10)       // отступ перед следующей группой
+                            Text(Fmt.dayHeader.string(from: g.day).uppercased())
+                                .font(.caption.weight(.bold)).foregroundStyle(Color.rkAccent)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 10).padding(.vertical, 4)
+                                .background(Color.rkDateHeader)
+                        }
                     }
                 }
             }
             .listStyle(.inset)
+            .scrollContentBackground(.hidden)
+            .background(Color.rkBackground)
             .contextMenu(forSelectionType: PurchaseRow.ID.self) { ids in
                 if !ids.isEmpty {
                     Button("Изменить выбранные…") { showBulk = true }
@@ -368,7 +381,11 @@ struct MacWorkspace: View {
 
     /// Enter в форме: сохранить текущую покупку и открыть следующую (только если сохранение удалось и форма не пуста).
     private func enterPressed(_ current: RReceipt) {
-        guard let next = PurchaseFlow.saveAndCreateNext(project: project, ctx: ctx, current: current, saver: saver) else { return }
+        guard let next = PurchaseFlow.saveAndCreateNext(project: project, ctx: ctx, current: current, saver: saver) else {
+            if let error = PurchaseFlow.lastError { saveErrorText = error }   // следующая позиция не создана, текущая остаётся активной
+            return
+        }
+        // новая позиция — выбранная строка; правая панель переключается на неё, курсор встаёт в «Наименование товара»
         selectedReceiptID = next.objectID
         if let first = next.purchaseList.first { selection = [first.objectID] }
     }

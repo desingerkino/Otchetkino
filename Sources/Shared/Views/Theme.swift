@@ -1,7 +1,7 @@
 import SwiftUI
 
 // MARK: - Палитра
-// Современный минимализм: молочно-белый фон, светло-серые поля, графит для текста, синий для основных действий.
+// Спокойная светлая палитра без чистого белого: приглушённые серые поверхности, графит для текста, синий для основных действий.
 
 extension Color {
     private static func dynamic(light: (Double, Double, Double), dark: (Double, Double, Double)) -> Color {
@@ -27,19 +27,21 @@ extension Color {
     static let rkWarn = dynamic(light: (0.89, 0.52, 0.08), dark: (1.0, 0.66, 0.25))
     /// Красный — ошибки и перерасход.
     static let rkBad = dynamic(light: (0.78, 0.22, 0.18), dark: (1.0, 0.45, 0.40))
-    /// Молочно-белый фон окна.
-    static let rkBackground = dynamic(light: (0.976, 0.973, 0.962), dark: (0.105, 0.108, 0.118))
-    /// Поверхность панелей и карточек.
-    static let rkCard = dynamic(light: (1.0, 1.0, 1.0), dark: (0.15, 0.155, 0.17))
+    /// Приглушённый фон рабочей области (#F0F1F3).
+    static let rkBackground = dynamic(light: (0.941, 0.945, 0.953), dark: (0.105, 0.108, 0.118))
+    /// Поверхность панелей и карточек (#F3F4F6).
+    static let rkCard = dynamic(light: (0.953, 0.957, 0.965), dark: (0.15, 0.155, 0.17))
     /// Мягкий фон полей ввода.
-    static let rkField = dynamic(light: (0.945, 0.948, 0.955), dark: (0.205, 0.21, 0.225))
+    static let rkField = dynamic(light: (0.902, 0.910, 0.925), dark: (0.205, 0.21, 0.225))
     /// Тонкие границы полей и карточек.
-    static let rkBorder = dynamic(light: (0.80, 0.815, 0.84), dark: (0.33, 0.34, 0.37))
+    static let rkBorder = dynamic(light: (0.73, 0.75, 0.78), dark: (0.33, 0.34, 0.37))
     /// Едва заметный фон заголовков дней и выбранных блоков.
-    /// Чередование строк таблицы: белая / #F2F3F5
-    static let rkRowOdd = dynamic(light: (1.0, 1.0, 1.0), dark: (0.15, 0.155, 0.17))
-    static let rkRowEven = dynamic(light: (0.949, 0.953, 0.961), dark: (0.19, 0.195, 0.21))
-    static let rkSoft = dynamic(light: (0.925, 0.93, 0.94), dark: (0.19, 0.195, 0.21))
+    /// Чередование строк таблицы: нечётные #E9EAED, чётные #D9DCE1.
+    static let rkRowOdd = dynamic(light: (0.914, 0.918, 0.929), dark: (0.15, 0.155, 0.17))
+    static let rkRowEven = dynamic(light: (0.851, 0.863, 0.882), dark: (0.19, 0.195, 0.21))
+    /// Фон заголовков дат (#E3E5E9) и шапки таблицы.
+    static let rkDateHeader = dynamic(light: (0.890, 0.898, 0.914), dark: (0.17, 0.175, 0.19))
+    static let rkSoft = dynamic(light: (0.890, 0.898, 0.914), dark: (0.19, 0.195, 0.21))
 }
 
 // MARK: - Кнопки
