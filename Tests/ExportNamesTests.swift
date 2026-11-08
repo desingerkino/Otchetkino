@@ -25,7 +25,8 @@ final class ExportNamesTests: XCTestCase {
     }
     private func pdfText(_ snap: ReportSnapshot) throws -> (text: String, doc: PDFDocument) {
         let doc = try XCTUnwrap(PDFDocument(data: PDFBuilder.build(snap)))
-        return (norm(doc.string ?? ""), doc)
+        // PDFKit при извлечении текста может вставить пробел перед запятой — это не ошибка вёрстки
+        return (norm(doc.string ?? "").replacingOccurrences(of: " ,", with: ","), doc)
     }
 
     // MARK: Формат заголовка
