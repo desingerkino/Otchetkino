@@ -1,7 +1,8 @@
 name: Сборка и тесты
 on:
   push:
-    branches: [main]
+    branches: ['**']
+  pull_request:
   workflow_dispatch:
 permissions:
   contents: write
@@ -81,12 +82,14 @@ jobs:
             launch.log
             /tmp/rekvizit-samples/*
       - name: Выложить сборку и примеры в релиз
+        if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release view latest >/dev/null 2>&1 || gh release create latest --title "Последняя сборка" --notes "Автоматическая сборка из ветки main. Mac-приложение без подписи Apple (без iCloud) и примеры отчётов."
           gh release upload latest Rekvizit-iOS-unsigned.ipa Rekvizit-macOS-local.zip /tmp/rekvizit-samples/sample-report.xlsx /tmp/rekvizit-samples/sample-report.pdf --clobber
       - name: Сохранить сгенерированный Xcode-проект в репозиторий
+        if: github.event_name == 'push'
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
