@@ -35,7 +35,6 @@ struct MacWorkspace: View {
     @StateObject private var reports = ReportController()
 
     @State private var selection = Set<PurchaseRow.ID>()
-    @State private var hoveredRow: PurchaseRow.ID?
     @State private var selectedReceiptID: NSManagedObjectID?
     @State private var filter = PurchaseFilter()
     @State private var showFilters = false
@@ -184,7 +183,18 @@ struct MacWorkspace: View {
     private static let colNumber: CGFloat = 46, colCategory: CGFloat = 130, colScenes: CGFloat = 70
     private static let colStore: CGFloat = 130, colAmount: CGFloat = 104, colReceipt: CGFloat = 62
 
+    /// Чередование сквозное: номер строки считается по всему списку, заголовки дат в счёте не участвуют.
+    static func zebraIndex(_ groups: [DayGroup]) -> [PurchaseRow.ID: Int] {
+        var map: [PurchaseRow.ID: Int] = [:]
+        var i = 0
+        for g in groups { for r in g.rows { map[r.id] = i; i += 1 } }
+        return map
+    }
+    /// Нечётная по порядку строка (1-я, 3-я…) — белая, чётная — светло-серая.
+    static func isEvenRow(_ zeroBasedIndex: Int) -> Bool { zeroBasedIndex % 2 == 1 }
+
     @ViewBuilder private func tableArea(_ rows: [PurchaseRow], _ groups: [DayGroup]) -> some View {
+        let zebra = Self.zebraIndex(groups)
         VStack(spacing: 0) {
             HStack(spacing: 10) {
                 Text("№").frame(width: Self.colNumber, alignment: .leading)
@@ -203,17 +213,12 @@ struct MacWorkspace: View {
             List(selection: $selection) {
                 ForEach(groups) { g in
                     Section {
-                        ForEach(Array(g.rows.enumerated()), id: \.element.id) { index, r in
+                        ForEach(g.rows) { r in
                             let selected = selection.contains(r.id)
                             rowView(r, selected: selected)
-                                .onHover { inside in
-                                    if inside { hoveredRow = r.id } else if hoveredRow == r.id { hoveredRow = nil }
-                                }
                                 .listRowBackground(
                                     RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                        .fill(selected ? Color.rkAccent : (index % 2 == 0 ? Color.rkRowOdd : Color.rkRowEven))
-                                        .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                            .fill(Color.rkAccent.opacity(!selected && hoveredRow == r.id ? 0.08 : 0)))
+                                        .fill(selected ? Color.rkAccent : (Self.isEvenRow(zebra[r.id] ?? 0) ? Color.rkRowEven : Color.rkRowOdd))
                                         .padding(.horizontal, 2)
                                 )
                         }

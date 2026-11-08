@@ -79,6 +79,11 @@ struct ReceiptForm: View {
                                 .frame(height: Self.dateRowHeight, alignment: .center)
                         }
                     }
+                    // 2–3. Наименование и цена (поля первой позиции чека; в карточке позиции ниже они не повторяются)
+                    if let first = receipt.purchaseList.first {
+                        PrimaryItemFields(purchase: first, warnAmount: review.contains("сумма"))
+                    }
+                    // 4. Магазин
                     RKLabeled(title: "Магазин / организация", warn: review.contains("магазин") ? "проверьте" : nil) {
                         StoreField(value: $receipt.store, warn: review.contains("магазин"))
                     }
@@ -88,7 +93,7 @@ struct ReceiptForm: View {
                     }
                 }
                 ForEach(Array(receipt.purchaseList.enumerated()), id: \.element.objectID) { idx, item in
-                    ItemSection(purchase: item, index: idx + 1, categories: Array(categories), project: receipt.project,
+                    ItemSection(purchase: item, index: idx + 1, primary: idx == 0, categories: Array(categories), project: receipt.project,
                                 warnAmount: review.contains("сумма"), onDelete: {
                         ctx.delete(item)
                     })
@@ -198,6 +203,8 @@ struct ReceiptForm: View {
 struct ItemSection: View {
     @ObservedObject var purchase: RPurchase
     let index: Int
+    /// Первая позиция: наименование и цена показаны вверху формы, здесь их нет (поля не дублируются).
+    var primary = false
     let categories: [RCategory]
     let project: RProject?
     var warnAmount = false
@@ -209,17 +216,12 @@ struct ItemSection: View {
 
     var body: some View {
         RKSection("Позиция \(index)") {
-            RKLabeled(title: "Наименование товара") {
-                RKTextField(title: "Что куплено", value: $purchase.title, autofocus: index == 1)
+            if !primary {
+                PrimaryItemFields(purchase: purchase, warnAmount: warnAmount, autofocus: false)
             }
-            HStack(alignment: .top, spacing: 12) {
-                RKLabeled(title: "Сумма", warn: warnAmount ? "проверьте" : nil) {
-                    AmountField(title: "0", kop: Binding(get: { purchase.amountKop }, set: { purchase.amountKop = $0 }), warn: warnAmount)
-                }
-                RKLabeled(title: "Кол-во") {
-                    RKTextField(title: "1", value: Binding(get: { quantityText }, set: { setQuantity($0) }))
-                        .frame(maxWidth: 90)
-                }
+            RKLabeled(title: "Кол-во") {
+                RKTextField(title: "1", value: Binding(get: { quantityText }, set: { setQuantity($0) }))
+                    .frame(maxWidth: 90)
             }
             RKLabeled(title: "Категория") {
                 Picker("Категория", selection: Binding<NSManagedObjectID?>(get: { purchase.category?.objectID }, set: { id in
@@ -340,5 +342,21 @@ struct SceneSelectionSheet: View {
         #if os(macOS)
         .frame(width: 440, height: 480)
         #endif
+    }
+}
+
+
+/// Наименование товара и цена одной позиции. Для первой позиции стоят сразу под номером и датой; для остальных — в их карточках.
+struct PrimaryItemFields: View {
+    @ObservedObject var purchase: RPurchase
+    var warnAmount = false
+    var autofocus = true
+    var body: some View {
+        RKLabeled(title: "Наименование товара") {
+            RKTextField(title: "Что куплено", value: $purchase.title, autofocus: autofocus)
+        }
+        RKLabeled(title: "Сумма", warn: warnAmount ? "проверьте" : nil) {
+            AmountField(title: "0", kop: Binding(get: { purchase.amountKop }, set: { purchase.amountKop = $0 }), warn: warnAmount)
+        }
     }
 }
