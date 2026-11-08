@@ -463,16 +463,16 @@ enum XLSXBuilder {
             xf(164, font: 5, fill: 3, border: 1, h: "right"),             // 14 overspend
             xf(wrap: true),                                               // 15 plain wrap
             xf(font: 3, fill: 2, border: 1),                              // 16 section header
-            xf(border: 1, fill: 4, wrap: true),                           // 17 text, белая
-            xf(border: 1, fill: 5, wrap: true),                           // 18 text, серая
-            xf(164, border: 1, fill: 4, h: "right"),                      // 19 money, белая
-            xf(164, border: 1, fill: 5, h: "right"),                      // 20 money, серая
-            xf(165, border: 1, fill: 4, h: "center"),                     // 21 date, белая
-            xf(165, border: 1, fill: 5, h: "center"),                     // 22 date, серая
-            xf(border: 1, fill: 4, h: "center", wrap: true),              // 23 center, белая
-            xf(border: 1, fill: 5, h: "center", wrap: true),              // 24 center, серая
-            xf(1, border: 1, fill: 4, h: "center"),                       // 25 int, белая
-            xf(1, border: 1, fill: 5, h: "center")                        // 26 int, серая
+            xf(fill: 4, border: 1, wrap: true),                           // 17 text, белая
+            xf(fill: 5, border: 1, wrap: true),                           // 18 text, серая
+            xf(164, fill: 4, border: 1, h: "right"),                      // 19 money, белая
+            xf(164, fill: 5, border: 1, h: "right"),                      // 20 money, серая
+            xf(165, fill: 4, border: 1, h: "center"),                     // 21 date, белая
+            xf(165, fill: 5, border: 1, h: "center"),                     // 22 date, серая
+            xf(fill: 4, border: 1, h: "center", wrap: true),              // 23 center, белая
+            xf(fill: 5, border: 1, h: "center", wrap: true),              // 24 center, серая
+            xf(1, fill: 4, border: 1, h: "center"),                       // 25 int, белая
+            xf(1, fill: 5, border: 1, h: "center")                        // 26 int, серая
         ]
         var x = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">"
         x += "<numFmts count=\"2\"><numFmt numFmtId=\"164\" formatCode=\"#,##0.00&quot; ₽&quot;\"/><numFmt numFmtId=\"165\" formatCode=\"dd\\.mm\\.yyyy\"/></numFmts>"
