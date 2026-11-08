@@ -248,7 +248,7 @@ struct PhotoSourceMenu<Content: View>: View {
 // MARK: - Создание покупок из фотографий
 
 enum AddFlow {
-    /// Создаёт черновики чеков из фотографий и запускает распознавание. Возвращает созданные чеки.
+    /// Создаёт покупки из фотографий (фото сразу записываются) и запускает распознавание. Возвращает созданные чеки.
     @MainActor
     static func create(from datas: [Data], kind: PhotoSourceKind, project: RProject, ctx: NSManagedObjectContext) -> [RReceipt] {
         var created: [RReceipt] = []
@@ -266,7 +266,7 @@ enum AddFlow {
     static func createManual(project: RProject, ctx: NSManagedObjectContext) -> RReceipt {
         let r = DataOps.createReceipt(ctx, project: project, photos: [], noReceipt: true)
         DataOps.addItem(ctx, to: r)
-        try? ctx.save()
+        // Пустая форма не пишется в базу до ввода данных: если ничего не введено, при переходе она просто исчезает.
         return r
     }
 }
@@ -285,7 +285,7 @@ struct AddPurchaseButton<Content: View>: View {
         }, onPicked: { datas, kind in
             let made = AddFlow.create(from: datas, kind: kind, project: project, ctx: ctx)
             if made.count == 1 { editing = EditTarget(receipt: made[0]) }
-            else if made.count > 1 { app.alertMessage = "Добавлено чеков: \(made.count). Они появились в разделе «Чеки» как черновики — откройте каждый, проверьте распознанные данные и подтвердите." }
+            else if made.count > 1 { app.alertMessage = "Добавлено чеков: \(made.count). Они уже сохранены в разделе «Чеки» — откройте каждый и проверьте распознанные данные (неуверенные поля подсвечены)." }
         }, label: label)
         .sheet(item: $editing) { target in ReceiptEditorSheet(receipt: target.receipt, isNew: true) }
     }

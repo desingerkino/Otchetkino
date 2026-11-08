@@ -56,10 +56,37 @@ final class PersistenceController: ObservableObject {
         container.viewContext.automaticallyMergesChangesFromParent = true
         // Конфликт одновременных правок на разных устройствах: побеждает последнее изменение конкретного поля.
         container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-        container.viewContext.undoManager = nil
+        // Отмена/повтор действий (⌘Z / ⇧⌘Z) работают с реальными данными через undo-менеджер Core Data.
+        let undo = UndoManager()
+        undo.levelsOfUndo = 60
+        container.viewContext.undoManager = undo
 
         observe()
         scheduleMaintenance(after: 0.5)
+        if !inMemory { runLaunchCleanup() }
+    }
+
+    /// Разовая уборка при запуске: старые «черновики» становятся обычными записями (перед этим делается резервная копия),
+    /// пустые формы без данных удаляются.
+    private func runLaunchCleanup() {
+        let container = self.container
+        Task.detached(priority: .utility) {
+            let probe = container.newBackgroundContext()
+            let needsMigration: Bool = await probe.perform {
+                let req = NSFetchRequest<RReceipt>(entityName: "RReceipt")
+                req.predicate = NSPredicate(format: "isDraft == YES")
+                req.fetchLimit = 1
+                return ((try? probe.count(for: req)) ?? 0) > 0
+            }
+            if needsMigration { _ = try? await BackupService.create(container: container) }
+            let ctx = container.newBackgroundContext()
+            ctx.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+            await ctx.perform {
+                Maintenance.clearDraftFlags(ctx)
+                Maintenance.purgeBlankReceipts(ctx)
+                if ctx.hasChanges { try? ctx.save() }
+            }
+        }
     }
 
     private static func localReason() -> String {
@@ -108,6 +135,7 @@ final class PersistenceController: ObservableObject {
         ctx.perform {
             Maintenance.dedupeCategories(ctx)
             Maintenance.fixDuplicateReceiptNumbers(ctx)
+            StoreDirectory.seedAndDedupe(ctx)
             if ctx.hasChanges { try? ctx.save() }
         }
     }
@@ -126,6 +154,19 @@ final class PersistenceController: ObservableObject {
 }
 
 enum Maintenance {
+    /// Версия 2.0: «черновиков» больше нет — все чеки обычные записи.
+    static func clearDraftFlags(_ ctx: NSManagedObjectContext) {
+        let req = NSFetchRequest<RReceipt>(entityName: "RReceipt")
+        req.predicate = NSPredicate(format: "isDraft == YES")
+        for r in (try? ctx.fetch(req)) ?? [] { r.isDraft = false; r.updatedAt = Date() }
+    }
+
+    /// Удаляет пустые формы (без фото, магазина, комментария и заполненных позиций).
+    static func purgeBlankReceipts(_ ctx: NSManagedObjectContext) {
+        let req = NSFetchRequest<RReceipt>(entityName: "RReceipt")
+        for r in (try? ctx.fetch(req)) ?? [] where r.isBlank { ctx.delete(r) }
+    }
+
     static func dedupeCategories(_ ctx: NSManagedObjectContext) {
         let req = NSFetchRequest<RCategory>(entityName: "RCategory")
         guard let all = try? ctx.fetch(req), all.count > 1 else { return }

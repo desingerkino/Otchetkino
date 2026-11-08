@@ -134,9 +134,6 @@ struct ReportsView: View {
                             DatePicker("С", selection: $from, displayedComponents: .date)
                             DatePicker("По", selection: $to, displayedComponents: .date)
                         }
-                        if t.draftCount > 0 {
-                            StatusBanner(text: "Неподтверждённые черновики (\(t.draftCount)) в отчёт не попадут.", icon: "exclamationmark.triangle.fill")
-                        }
                     }
                     .card()
 

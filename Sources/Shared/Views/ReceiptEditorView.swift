@@ -1,12 +1,12 @@
 import SwiftUI
 import CoreData
 
-/// Лист редактирования чека (iPhone и Mac): «Закрыть» оставляет чек черновиком, «Сохранить» подтверждает.
+/// Лист редактирования покупки (iPhone и Mac). Все изменения сохраняются сами; «Готово» просто закрывает лист.
 struct ReceiptEditorSheet: View {
     @ObservedObject var receipt: RReceipt
     var isNew: Bool
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.managedObjectContext) private var ctx
+    @EnvironmentObject private var saver: SaveCoordinator
 
     var body: some View {
         NavigationStack {
@@ -16,20 +16,16 @@ struct ReceiptEditorSheet: View {
                 .navigationBarTitleDisplayMode(.inline)
                 #endif
                 .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button(receipt.isDraft ? "Закрыть" : "Готово") { try? ctx.save(); dismiss() }
-                    }
-                    if receipt.isDraft {
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("Сохранить") { receipt.isDraft = false; receipt.touch(); try? ctx.save(); dismiss() }
-                                .disabled(receipt.purchaseList.isEmpty)
-                        }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Готово") { saver.saveNow(); dismiss() }
                     }
                 }
         }
         #if os(macOS)
         .frame(width: 560, height: 720)
         #endif
+        .onAppear { saver.setActive([receipt.objectID]) }
+        .onDisappear { saver.setActive([]); saver.saveNow() }
         .onChange(of: receipt.isDeleted) { deleted in if deleted { dismiss() } }
     }
 }
@@ -40,6 +36,7 @@ struct ReceiptForm: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var ocr: OCRCoordinator
     @EnvironmentObject private var refresher: DataRefresher
+    @EnvironmentObject private var saver: SaveCoordinator
     @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \RCategory.sortOrder, ascending: true), NSSortDescriptor(keyPath: \RCategory.name, ascending: true)])
     private var categories: FetchedResults<RCategory>
 
@@ -53,48 +50,65 @@ struct ReceiptForm: View {
 
     var body: some View {
         let _ = refresher.tick
-        Form {
-            statusSection
-            photoSection
-            Section("Чек") {
-                LabeledContent("Номер", value: receipt.numberText)
-                DatePicker("Дата покупки", selection: Binding(get: { receipt.date ?? Date() }, set: { receipt.date = $0 }), displayedComponents: .date)
-                TextField("Магазин / организация", text: $receipt.store)
-                TextField("ИНН продавца", text: $receipt.inn)
-                    #if os(iOS)
-                    .keyboardType(.numberPad)
-                    #endif
-                Toggle("Без чека", isOn: $receipt.noReceipt)
-                TextField("Комментарий к чеку", text: $receipt.comment, axis: .vertical)
-            }
-            ForEach(Array(receipt.purchaseList.enumerated()), id: \.element.objectID) { idx, item in
-                ItemSection(purchase: item, index: idx + 1, categories: Array(categories), project: receipt.project, onDelete: {
-                    ctx.delete(item); try? ctx.save()
-                })
-            }
-            Section {
-                Button { DataOps.addItem(ctx, to: receipt); try? ctx.save() } label: { Label("Добавить позицию", systemImage: "plus.circle") }
-                LabeledContent("Сумма чека") { Text(Money.format(receipt.itemsSum)).font(.headline) }
-            } footer: {
-                if receipt.purchaseList.count > 1 { Text("Все позиции этого чека имеют общий номер \(receipt.numberText).") }
-            }
-            if !receipt.rawText.isEmpty {
-                Section {
-                    DisclosureGroup("Распознанный текст", isExpanded: $showRaw) {
-                        Text(receipt.rawText).font(.system(.footnote, design: .monospaced)).textSelection(.enabled)
+        let review = ocr.review[receipt.objectID] ?? []
+        ScrollView {
+            VStack(spacing: 14) {
+                statusBanner(review)
+                photoCard
+                RKSection("Чек") {
+                    HStack(alignment: .top, spacing: 12) {
+                        RKLabeled(title: "Номер") {
+                            Text(receipt.numberText).font(.body.monospacedDigit().weight(.semibold)).frame(minHeight: 34, alignment: .leading)
+                        }
+                        RKLabeled(title: "Дата покупки", warn: review.contains("дата") ? "проверьте" : nil) {
+                            DatePicker("Дата покупки", selection: Binding(get: { receipt.date ?? Date() }, set: { receipt.date = $0 }), displayedComponents: .date)
+                                .labelsHidden()
+                        }
+                        Spacer(minLength: 0)
+                    }
+                    RKLabeled(title: "Магазин / организация", warn: review.contains("магазин") ? "проверьте" : nil) {
+                        StoreField(value: $receipt.store, warn: review.contains("магазин"))
+                    }
+                    Toggle("Покупка без чека", isOn: $receipt.noReceipt)
+                    RKLabeled(title: "Комментарий к чеку") {
+                        RKTextField(title: "Комментарий", value: $receipt.comment, axis: .vertical)
                     }
                 }
-            }
-            Section {
+                ForEach(Array(receipt.purchaseList.enumerated()), id: \.element.objectID) { idx, item in
+                    ItemSection(purchase: item, index: idx + 1, categories: Array(categories), project: receipt.project,
+                                warnAmount: review.contains("сумма"), onDelete: {
+                        ctx.delete(item)
+                    })
+                }
+                RKSection {
+                    Button { DataOps.addItem(ctx, to: receipt) } label: { Label("Добавить позицию", systemImage: "plus.circle") }
+                        .buttonStyle(RKSecondaryButtonStyle())
+                    HStack {
+                        Text("Сумма чека").foregroundStyle(.secondary)
+                        Spacer()
+                        Text(Money.format(receipt.itemsSum)).font(.title3.weight(.semibold).monospacedDigit())
+                    }
+                    if receipt.purchaseList.count > 1 {
+                        Text("Все позиции этого чека имеют общий номер \(receipt.numberText).").font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+                if !receipt.rawText.isEmpty {
+                    RKSection {
+                        DisclosureGroup("Распознанный текст", isExpanded: $showRaw) {
+                            Text(receipt.rawText).font(.system(.footnote, design: .monospaced)).textSelection(.enabled)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                }
                 Button(role: .destructive) { confirmDelete = true } label: { Label("Удалить чек", systemImage: "trash") }
+                    .buttonStyle(.borderless)
+                    .padding(.vertical, 6)
             }
+            .padding(14)
         }
-        #if os(macOS)
-        .formStyle(.grouped)
-        #endif
-        .onDisappear { if ctx.hasChanges { try? ctx.save() } }
+        .background(Color.rkBackground)
         .confirmationDialog("Удалить чек \(receipt.numberText) вместе с позициями и фотографиями?", isPresented: $confirmDelete, titleVisibility: .visible) {
-            Button("Удалить", role: .destructive) { ctx.delete(receipt); try? ctx.save(); dismiss() }
+            Button("Удалить", role: .destructive) { ctx.delete(receipt); dismiss() }
             Button("Отмена", role: .cancel) {}
         }
         #if os(iOS)
@@ -111,7 +125,7 @@ struct ReceiptForm: View {
                         target.photo.thumb = ImageTools.thumbnailJPEG(from: d)
                         target.photo.fileExtension = ImageTools.fileExtension(for: d)
                         ThumbCache.invalidate(target.photo)
-                        receipt.touch(); try? ctx.save()
+                        receipt.touch()
                     }
                     replacing = nil
                 }, label: { EmptyView() })
@@ -125,48 +139,42 @@ struct ReceiptForm: View {
 
     // MARK: Разделы
 
-    @ViewBuilder private var statusSection: some View {
+    @ViewBuilder private func statusBanner(_ review: [String]) -> some View {
         if ocr.running.contains(receipt.objectID) {
-            Section { HStack(spacing: 10) { ProgressView(); Text("Распознаём чек…") } }
-        } else if receipt.isDraft {
-            Section {
-                VStack(alignment: .leading, spacing: 10) {
-                    if ocr.failed.contains(receipt.objectID) {
-                        StatusBanner(text: "Чек не удалось уверенно прочитать. Заполните данные вручную — фото сохранено.", icon: "exclamationmark.triangle.fill")
-                    } else if !receipt.rawText.isEmpty {
-                        StatusBanner(text: "Данные распознаны автоматически. Проверьте дату, магазин и суммы, затем подтвердите.")
-                    } else {
-                        StatusBanner(text: "Черновик. Заполните данные и подтвердите покупку.")
-                    }
-                    HStack {
-                        Button { receipt.isDraft = false; receipt.touch(); try? ctx.save() } label: { Label("Подтвердить покупку", systemImage: "checkmark.circle.fill") }
-                            .buttonStyle(.borderedProminent)
-                            .disabled(receipt.purchaseList.isEmpty)
-                        if !receipt.photoList.isEmpty {
-                            Button { OCRCoordinator.shared.recognize(receipt) } label: { Label("Распознать заново", systemImage: "text.viewfinder") }
-                                .buttonStyle(.bordered)
-                        }
-                    }
-                }
-            }
+            HStack(spacing: 10) { ProgressView().controlSize(.small); Text("Распознаём чек…") }
+                .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.rkAccent.opacity(0.10)).clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        } else if ocr.failed.contains(receipt.objectID) {
+            StatusBanner(text: "Чек не удалось уверенно прочитать. Заполните данные вручную — фото сохранено.", icon: "exclamationmark.triangle.fill", tint: .rkWarn)
+        } else if !review.isEmpty {
+            StatusBanner(text: "Данные распознаны автоматически. Проверьте: \(review.joined(separator: ", ")) — распознавание было неуверенным.",
+                         icon: "exclamationmark.triangle.fill", tint: .rkWarn)
         }
     }
 
-    @ViewBuilder private var photoSection: some View {
-        Section("Фотографии чека") {
+    @ViewBuilder private var photoCard: some View {
+        RKSection("Фотографии чека") {
             let photos = receipt.photoList
             if !photos.isEmpty {
                 PhotoStrip(photos: photos, height: 120,
                            onOpen: { ph in viewer = ViewerTarget(photos: photos, index: photos.firstIndex(of: ph) ?? 0) },
                            onReplace: { ph in replacing = ReplaceTarget(photo: ph) },
-                           onDelete: { ph in ctx.delete(ph); try? ctx.save() })
+                           onDelete: { ph in ctx.delete(ph) })
             }
-            PhotoSourceMenu(onPicked: { datas, _ in
-                for d in datas { DataOps.addPhoto(ctx, data: d, to: receipt) }
-                if receipt.noReceipt { receipt.noReceipt = false }
-                try? ctx.save()
-                if receipt.rawText.isEmpty && receipt.purchaseList.allSatisfy({ $0.amountKop == 0 }) { OCRCoordinator.shared.recognize(receipt) }
-            }, label: { Label(photos.isEmpty ? "Добавить фото чека" : "Добавить ещё фото", systemImage: "camera.badge.ellipsis") })
+            HStack(spacing: 10) {
+                PhotoSourceMenu(onPicked: { datas, _ in
+                    for d in datas { DataOps.addPhoto(ctx, data: d, to: receipt) }
+                    if receipt.noReceipt { receipt.noReceipt = false }
+                    saver.saveNow()   // фото сразу записывается и связывается с покупкой
+                    if receipt.rawText.isEmpty && receipt.purchaseList.allSatisfy({ $0.amountKop == 0 }) { OCRCoordinator.shared.recognize(receipt) }
+                }, label: { Label(photos.isEmpty ? "Добавить фото чека" : "Добавить ещё фото", systemImage: "camera.badge.ellipsis") })
+                .buttonStyle(RKSecondaryButtonStyle())
+                if !photos.isEmpty {
+                    Button { OCRCoordinator.shared.recognize(receipt, force: true) } label: { Label("Распознать заново", systemImage: "text.viewfinder") }
+                        .buttonStyle(RKSecondaryButtonStyle())
+                        .disabled(ocr.running.contains(receipt.objectID))
+                }
+            }
         }
     }
 }
@@ -177,6 +185,7 @@ struct ItemSection: View {
     let index: Int
     let categories: [RCategory]
     let project: RProject?
+    var warnAmount = false
     let onDelete: () -> Void
     @Environment(\.managedObjectContext) private var ctx
     @State private var showScenes = false
@@ -184,44 +193,53 @@ struct ItemSection: View {
     struct PhotoViewerTarget: Identifiable { let id = UUID(); let photos: [RPhoto]; let index: Int }
 
     var body: some View {
-        Section("Позиция \(index)") {
-            TextField("Наименование товара", text: $purchase.title)
-            HStack {
-                AmountField(title: "Сумма, ₽", kop: Binding(get: { purchase.amountKop }, set: { purchase.amountKop = $0 }))
-                Divider()
-                TextField("Кол-во", value: $purchase.quantity, format: .number)
-                    #if os(iOS)
-                    .keyboardType(.decimalPad)
-                    #endif
-                    .frame(maxWidth: 80)
+        RKSection("Позиция \(index)") {
+            RKLabeled(title: "Наименование товара") {
+                RKTextField(title: "Что куплено", value: $purchase.title)
             }
-            Picker("Категория", selection: Binding<NSManagedObjectID?>(get: { purchase.category?.objectID }, set: { id in
-                purchase.category = categories.first { $0.objectID == id }
-            })) {
-                Text("Не выбрана").tag(NSManagedObjectID?.none)
-                ForEach(categories, id: \.objectID) { c in Text(c.name).tag(Optional(c.objectID)) }
-            }
-            Button { showScenes = true } label: {
-                HStack {
-                    Text("Сцены")
-                    Spacer()
-                    Text(purchase.scenesText.isEmpty ? "Не выбраны" : purchase.scenesText).foregroundStyle(.secondary)
-                    Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
+            HStack(alignment: .top, spacing: 12) {
+                RKLabeled(title: "Сумма", warn: warnAmount ? "проверьте" : nil) {
+                    AmountField(title: "0", kop: Binding(get: { purchase.amountKop }, set: { purchase.amountKop = $0 }), warn: warnAmount)
+                }
+                RKLabeled(title: "Кол-во") {
+                    RKTextField(title: "1", value: Binding(get: { quantityText }, set: { setQuantity($0) }))
+                        .frame(maxWidth: 90)
                 }
             }
-            .buttonStyle(.plain)
-            TextField("Назначение / комментарий (для какой сцены, зачем куплено)", text: $purchase.purpose, axis: .vertical)
+            RKLabeled(title: "Категория") {
+                Picker("Категория", selection: Binding<NSManagedObjectID?>(get: { purchase.category?.objectID }, set: { id in
+                    purchase.category = categories.first { $0.objectID == id }
+                })) {
+                    Text("Не выбрана").tag(NSManagedObjectID?.none)
+                    ForEach(categories, id: \.objectID) { c in Text(c.name).tag(Optional(c.objectID)) }
+                }
+                .labelsHidden()
+            }
+            RKLabeled(title: "Сцены") {
+                Button { showScenes = true } label: {
+                    HStack {
+                        Text(purchase.scenesText.isEmpty ? "Не выбраны" : purchase.scenesText).foregroundStyle(purchase.scenesText.isEmpty ? .secondary : .primary)
+                        Spacer()
+                        Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
+                    }
+                    .rkField()
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+            RKLabeled(title: "Назначение / комментарий") {
+                RKTextField(title: "Для какой сцены, зачем куплено", value: $purchase.purpose, axis: .vertical)
+            }
             let photos = purchase.itemPhotoList
             if !photos.isEmpty {
                 PhotoStrip(photos: photos, height: 70,
                            onOpen: { ph in viewer = PhotoViewerTarget(photos: photos, index: photos.firstIndex(of: ph) ?? 0) },
-                           onReplace: { ph in ctx.delete(ph); try? ctx.save() },
-                           onDelete: { ph in ctx.delete(ph); try? ctx.save() })
+                           onReplace: { ph in ctx.delete(ph) },
+                           onDelete: { ph in ctx.delete(ph) })
             }
             HStack {
                 PhotoSourceMenu(onPicked: { datas, _ in
                     for d in datas { DataOps.addItemPhoto(ctx, data: d, to: purchase) }
-                    try? ctx.save()
                 }, label: { Label("Фото товара", systemImage: "photo.badge.plus") })
                 Spacer()
                 Button(role: .destructive) { onDelete() } label: { Label("Удалить позицию", systemImage: "trash") }
@@ -236,6 +254,18 @@ struct ItemSection: View {
         #else
         .sheet(item: $viewer) { v in PhotoViewer(photos: v.photos, index: v.index) }
         #endif
+    }
+
+    private var quantityText: String {
+        let q = purchase.quantity
+        if q == q.rounded() { return String(Int(q)) }
+        return String(q).replacingOccurrences(of: ".", with: ",")
+    }
+
+    private func setQuantity(_ text: String) {
+        let normalized = text.replacingOccurrences(of: ",", with: ".").trimmingCharacters(in: .whitespaces)
+        if let v = Double(normalized), v > 0 { if purchase.quantity != v { purchase.quantity = v } }
+        else if normalized.isEmpty { if purchase.quantity != 1 { purchase.quantity = 1 } }
     }
 }
 
@@ -256,7 +286,6 @@ struct SceneSelectionSheet: View {
                         Button {
                             let set = purchase.mutableSetValue(forKey: "scenes")
                             if selected { set.remove(s) } else { set.add(s) }
-                            try? ctx.save()
                         } label: {
                             HStack {
                                 Text(s.displayTitle)
@@ -283,7 +312,6 @@ struct SceneSelectionSheet: View {
                         s.project = project
                         purchase.mutableSetValue(forKey: "scenes").add(s)
                         newCode = ""; newTitle = ""
-                        try? ctx.save()
                     }
                     .disabled(newCode.trimmingCharacters(in: .whitespaces).isEmpty && newTitle.trimmingCharacters(in: .whitespaces).isEmpty)
                 }

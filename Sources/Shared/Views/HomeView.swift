@@ -34,9 +34,6 @@ struct HomeView: View {
                     }
                     .buttonStyle(.bordered).controlSize(.large)
 
-                    if t.draftCount > 0 {
-                        StatusBanner(text: "Черновиков, ожидающих проверки: \(t.draftCount). Они не входят в итоги. Откройте раздел «Чеки».", icon: "tray.full.fill")
-                    }
                     chartCard
                     recentCard
                 }
@@ -123,7 +120,7 @@ struct HomeView: View {
     }
 
     @ViewBuilder private var recentCard: some View {
-        let recent = project.confirmedReceipts.sorted { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }.prefix(5)
+        let recent = project.liveReceipts.sorted { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }.prefix(5)
         if !recent.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Последние покупки").font(.headline)

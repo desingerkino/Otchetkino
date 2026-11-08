@@ -94,30 +94,6 @@ struct AdvanceSheet: View {
     }
 }
 
-/// Поле ввода суммы в рублях: хранит значение в копейках.
-struct AmountField: View {
-    let title: String
-    @Binding var kop: Int64
-    @State private var text = ""
-    @FocusState private var focused: Bool
-
-    var body: some View {
-        TextField(title, text: $text)
-            .focused($focused)
-            #if os(iOS)
-            .keyboardType(.decimalPad)
-            #endif
-            .onAppear { text = Money.editString(kop) }
-            .onChange(of: text) { new in
-                if new.trimmingCharacters(in: .whitespaces).isEmpty { kop = 0 }
-                else if let v = Money.parse(new) { kop = v }
-            }
-            .onChange(of: kop) { new in
-                if !focused { text = Money.editString(new) }
-            }
-    }
-}
-
 struct ProjectsListView: View {
     @EnvironmentObject private var app: AppState
     @Environment(\.dismiss) private var dismiss

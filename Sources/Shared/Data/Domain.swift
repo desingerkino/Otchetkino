@@ -10,7 +10,6 @@ struct ProjectTotals {
     var purchaseCount = 0
     var receiptCount = 0          // чеки с фотографией/чеком
     var noReceiptPurchases = 0    // покупки без чека
-    var draftCount = 0
     /// Остаток = выдано − потрачено − возвращено
     var balance: Int64 { issued - spent - returned }
     var isOverspent: Bool { balance < 0 }
@@ -48,7 +47,8 @@ extension RProject {
             return ($0.createdAt ?? .distantPast) < ($1.createdAt ?? .distantPast)
         }
     }
-    var confirmedReceipts: [RReceipt] { receiptList.filter { !$0.isDraft } }
+    /// Все осмысленные чеки: пустые формы (без данных, фото и суммы) в учёте не участвуют.
+    var liveReceipts: [RReceipt] { receiptList.filter { !$0.isBlank } }
     var displayName: String { name.isEmpty ? "Без названия" : name }
 
     var nextReceiptNumber: Int32 { (receiptList.map { $0.number }.max() ?? 0) + 1 }
@@ -66,9 +66,9 @@ extension RProject {
             if a.kind == 0 { t.issued += a.amountKop } else { t.returned += a.amountKop }
         }
         for r in receiptList {
-            if r.isDraft { t.draftCount += 1; continue }
+            if r.isBlank { continue }
             guard inRange(r.date) else { continue }
-            let items = r.purchaseList
+            let items = r.purchaseList.filter { !$0.isBlank }
             t.spent += r.itemsSum
             t.purchaseCount += items.count
             if r.noReceipt { t.noReceiptPurchases += items.count } else { t.receiptCount += 1 }
@@ -78,7 +78,7 @@ extension RProject {
 
     func categoryTotals() -> [CategoryTotal] {
         var map: [String: Int64] = [:]
-        for r in confirmedReceipts {
+        for r in liveReceipts {
             for p in r.purchaseList { map[p.category?.name ?? "Без категории", default: 0] += p.amountKop }
         }
         return map.map { CategoryTotal(id: $0.key, name: $0.key, amount: $0.value) }.sorted { $0.amount > $1.amount }
@@ -87,7 +87,7 @@ extension RProject {
     func cumulativeSpending() -> [CumulativePoint] {
         var perDay: [Date: Int64] = [:]
         let cal = Calendar.current
-        for r in confirmedReceipts {
+        for r in liveReceipts {
             let day = cal.startOfDay(for: r.date ?? Date())
             perDay[day, default: 0] += r.itemsSum
         }
@@ -114,6 +114,14 @@ extension RReceipt {
         }
     }
     var itemsSum: Int64 { purchaseList.reduce(0) { $0 + $1.amountKop } }
+    /// Пустая форма: ни фотографий, ни магазина, ни комментария, ни заполненных позиций.
+    var isBlank: Bool {
+        store.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && comment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && rawText.isEmpty
+            && photoList.isEmpty
+            && purchaseList.allSatisfy { $0.isBlank }
+    }
     var numberText: String { Fmt.number(number) }
     var storeText: String { store.isEmpty ? "—" : store }
     func touch() { updatedAt = Date() }
@@ -130,6 +138,15 @@ extension RPurchase {
         (photos as? Set<RPhoto> ?? []).sorted { ($0.sortOrder, $0.createdAt ?? .distantPast) < ($1.sortOrder, $1.createdAt ?? .distantPast) }
     }
     var categoryName: String { category?.name ?? "—" }
+    /// Пустая позиция: нет названия, суммы, назначения, фото, категории и сцен.
+    var isBlank: Bool {
+        title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && amountKop == 0
+            && purpose.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && itemPhotoList.isEmpty
+            && category == nil
+            && sceneList.isEmpty
+    }
 }
 
 extension RScene {
@@ -215,7 +232,7 @@ enum DataOps {
         return ph
     }
 
-    /// Создаёт новый (пока неподтверждённый) чек со следующим порядковым номером.
+    /// Создаёт новый чек со следующим порядковым номером. Отдельного «подтверждения» нет: чек сразу обычная запись.
     @discardableResult
     static func createReceipt(_ ctx: NSManagedObjectContext, project: RProject, photos: [Data], noReceipt: Bool) -> RReceipt {
         let r = RReceipt(context: ctx)
@@ -223,7 +240,7 @@ enum DataOps {
         r.project = project
         r.date = Date()
         r.noReceipt = noReceipt || photos.isEmpty
-        r.isDraft = true
+        r.isDraft = false
         for d in photos { addPhoto(ctx, data: d, to: r) }
         return r
     }

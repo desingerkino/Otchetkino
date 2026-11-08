@@ -6,6 +6,10 @@ struct RekvizitApp: App {
     @StateObject private var persistence = PersistenceController.shared
     @StateObject private var appState = AppState()
     @StateObject private var refresher = DataRefresher(context: PersistenceController.shared.viewContext)
+    @StateObject private var saver = SaveCoordinator.shared
+    #if os(macOS)
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    #endif
 
     var body: some Scene {
         WindowGroup {
@@ -14,12 +18,20 @@ struct RekvizitApp: App {
                 .environmentObject(persistence)
                 .environmentObject(appState)
                 .environmentObject(refresher)
+                .environmentObject(saver)
                 .environmentObject(OCRCoordinator.shared)
                 .tint(Color.rkAccent)
         }
         #if os(macOS)
         .defaultSize(width: 1360, height: 820)
         .commands {
+            CommandGroup(replacing: .saveItem) {
+                Button("Сохранить") { _ = SaveCoordinator.shared.saveNow() }.keyboardShortcut("s")
+            }
+            CommandGroup(replacing: .undoRedo) {
+                Button("Отменить") { UndoRouter.undo() }.keyboardShortcut("z")
+                Button("Повторить") { UndoRouter.redo() }.keyboardShortcut("z", modifiers: [.command, .shift])
+            }
             CommandGroup(replacing: .newItem) {
                 Button("Новая покупка") { AppCommand.post(.newPurchase) }.keyboardShortcut("n")
                 Button("Загрузить чеки из файлов…") { AppCommand.post(.importReceipts) }.keyboardShortcut("i")
@@ -50,6 +62,7 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject private var persistence: PersistenceController
     @EnvironmentObject private var app: AppState
+    @EnvironmentObject private var saver: SaveCoordinator
 
     var body: some View {
         Group {
@@ -68,14 +81,14 @@ struct RootView: View {
         } message: { Text(persistence.loadError ?? "") }
         .onChange(of: scenePhase) { phase in
             if phase != .active {
-                persistence.save()
+                _ = saver.saveNow()
                 BackupService.autoBackupIfNeeded(container: persistence.container)
             }
         }
         .task { BackupService.autoBackupIfNeeded(container: persistence.container) }
         #if os(macOS)
         .frame(minWidth: 1120, minHeight: 660)
-        .onReceive(NotificationCenter.default.publisher(for: NSApplication.willTerminateNotification)) { _ in persistence.save() }
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.willCloseNotification)) { _ in _ = saver.saveNow() }
         #endif
     }
 }
@@ -110,3 +123,59 @@ struct ProjectGate<Content: View>: View {
         }
     }
 }
+
+#if os(macOS)
+import AppKit
+
+/// Закрытие приложения: сначала принудительное сохранение; если не удалось — предупреждение, а не молчаливая потеря данных.
+@MainActor
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        let saver = SaveCoordinator.shared
+        if saver.saveNow() { return .terminateNow }
+        while true {
+            let alert = NSAlert()
+            alert.alertStyle = .critical
+            alert.messageText = "Не удалось сохранить изменения"
+            alert.informativeText = "\(saver.errorText)\n\nДанные не потеряны — они остаются в приложении. Повторите сохранение."
+            alert.addButton(withTitle: "Повторить сохранение")
+            alert.addButton(withTitle: "Не закрывать")
+            alert.addButton(withTitle: "Закрыть без сохранения")
+            switch alert.runModal() {
+            case .alertFirstButtonReturn:
+                if saver.saveNow() { return .terminateNow }
+            case .alertSecondButtonReturn:
+                return .terminateCancel
+            default:
+                return .terminateNow
+            }
+        }
+    }
+}
+
+/// Отмена и повтор: в текстовом поле работает обычная отмена ввода, в остальных случаях — отмена действий приложения над данными.
+@MainActor
+enum UndoRouter {
+    private static var fieldEditor: NSTextView? {
+        guard let tv = NSApp.keyWindow?.firstResponder as? NSTextView, tv.isEditable else { return nil }
+        return tv
+    }
+
+    static func undo() {
+        if let tv = fieldEditor, tv.undoManager?.canUndo == true { tv.undoManager?.undo(); return }
+        let ctx = PersistenceController.shared.viewContext
+        _ = SaveCoordinator.shared.saveNow()
+        guard let um = ctx.undoManager, um.canUndo else { return }
+        while um.groupingLevel > 0 { um.endUndoGrouping() }
+        um.undo()
+    }
+
+    static func redo() {
+        if let tv = fieldEditor, tv.undoManager?.canRedo == true { tv.undoManager?.redo(); return }
+        let ctx = PersistenceController.shared.viewContext
+        guard let um = ctx.undoManager, um.canRedo else { return }
+        while um.groupingLevel > 0 { um.endUndoGrouping() }
+        um.redo()
+    }
+}
+#endif

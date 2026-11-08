@@ -207,7 +207,7 @@ enum XLSXBuilder {
         func money(_ label: String, _ kop: Int64, style: Int = S.money) {
             sh.text(r, 1, label, S.text); sh.number(r, 2, Money.double(kop), style); r += 1
         }
-        money("Получено подотчётных средств", s.issued)
+        money("Выдано подотчётных средств", s.issued)
         money("Возвращено неиспользованных средств", s.returned)
         money("Общая сумма расходов", s.spent)
         let balanceLabel = s.balance < 0 ? "ПЕРЕРАСХОД (остаток отрицательный)" : "ОСТАТОК"
@@ -319,9 +319,9 @@ enum XLSXBuilder {
     // MARK: - Лист 3. Реестр чеков
 
     private static func buildRegistry(_ sh: Sheet, _ s: ReportSnapshot) {
-        sh.widths = [10, 12, 30, 16, 16, 11, 20, 12]
-        sh.text(1, 1, "РЕЕСТР ЧЕКОВ — \(s.projectName)", S.title); sh.merge(1, 1, 1, 8); sh.height(1, 28)
-        let headers = ["№ чека", "Дата", "Магазин", "ИНН", "Сумма чека", "Позиций", "Оригинал чека", "Фото, шт."]
+        sh.widths = [10, 12, 34, 16, 11, 20, 12]
+        sh.text(1, 1, "РЕЕСТР ЧЕКОВ — \(s.projectName)", S.title); sh.merge(1, 1, 1, 7); sh.height(1, 28)
+        let headers = ["№ чека", "Дата", "Магазин", "Сумма чека", "Позиций", "Оригинал чека", "Фото, шт."]
         for (i, h) in headers.enumerated() { sh.text(3, i + 1, h, S.header) }
         sh.height(3, 28)
         sh.freezeAfterRow = 3
@@ -330,19 +330,18 @@ enum XLSXBuilder {
             sh.number(r, 1, Double(rec.number), S.int)
             sh.number(r, 2, serial(rec.date), S.date)
             sh.text(r, 3, rec.store.isEmpty ? "—" : rec.store, S.text)
-            sh.text(r, 4, rec.inn.isEmpty ? "—" : rec.inn, S.center)
-            sh.number(r, 5, Money.double(rec.total), S.money)
-            sh.number(r, 6, Double(rec.items.count), S.int)
-            sh.text(r, 7, rec.noReceipt ? "Без чека" : (rec.photos.isEmpty ? "Нет" : "Да"), S.center)
-            sh.number(r, 8, Double(rec.photos.count), S.int)
+            sh.number(r, 4, Money.double(rec.total), S.money)
+            sh.number(r, 5, Double(rec.items.count), S.int)
+            sh.text(r, 6, rec.noReceipt ? "Без чека" : (rec.photos.isEmpty ? "Нет" : "Да"), S.center)
+            sh.number(r, 7, Double(rec.photos.count), S.int)
             sh.height(r, 22)
             r += 1
         }
-        for c in 1...8 { sh.blank(r, c, S.totalText) }
-        sh.text(r, 1, "ИТОГО", S.totalText); sh.merge(r, 1, r, 4)
+        for c in 1...7 { sh.blank(r, c, S.totalText) }
+        sh.text(r, 1, "ИТОГО", S.totalText); sh.merge(r, 1, r, 3)
         if r > 4 {
-            sh.formula(r, 5, "SUM(E4:E\(r - 1))", cached: Money.double(s.spent), S.totalMoney)
-            sh.formula(r, 6, "SUM(F4:F\(r - 1))", cached: Double(s.purchaseCount), S.int)
+            sh.formula(r, 4, "SUM(D4:D\(r - 1))", cached: Money.double(s.spent), S.totalMoney)
+            sh.formula(r, 5, "SUM(E4:E\(r - 1))", cached: Double(s.purchaseCount), S.int)
         }
         sh.height(r, 24)
     }

@@ -50,6 +50,28 @@ enum Money {
 
     static func double(_ kop: Int64) -> Double { Double(kop) / 100.0 }
 
+    /// Приводит ввод к виду «1 234 567,50»: только цифры, не более двух знаков после запятой, пробелы между тысячами.
+    static func formatInput(_ text: String) -> String {
+        var intPart = "", frac = ""
+        var hasSeparator = false
+        for ch in text {
+            if ch.isASCII && ch.isNumber {
+                if hasSeparator { if frac.count < 2 { frac.append(ch) } } else { intPart.append(ch) }
+            } else if (ch == "," || ch == ".") && !hasSeparator {
+                hasSeparator = true
+            }
+        }
+        while intPart.count > 1 && intPart.hasPrefix("0") { intPart.removeFirst() }
+        var grouped = ""
+        for (i, ch) in intPart.reversed().enumerated() {
+            if i > 0 && i % 3 == 0 { grouped.append(" ") }
+            grouped.append(ch)
+        }
+        grouped = String(grouped.reversed())
+        if hasSeparator { return (grouped.isEmpty ? "0" : grouped) + "," + frac }
+        return grouped
+    }
+
     /// Строка для поля ввода: «18500» или «18500,5»
     static func editString(_ kop: Int64) -> String {
         if kop == 0 { return "" }
@@ -64,6 +86,10 @@ enum Fmt {
     }()
     static let dateTime: DateFormatter = {
         let f = DateFormatter(); f.locale = Locale(identifier: "ru_RU"); f.dateFormat = "dd.MM.yyyy HH:mm"; return f
+    }()
+    /// «8 ноября 2026» — заголовки дней в списке покупок
+    static let dayHeader: DateFormatter = {
+        let f = DateFormatter(); f.locale = Locale(identifier: "ru_RU"); f.dateFormat = "d MMMM yyyy"; return f
     }()
     static let monthDay: DateFormatter = {
         let f = DateFormatter(); f.locale = Locale(identifier: "ru_RU"); f.dateFormat = "d MMM"; return f
