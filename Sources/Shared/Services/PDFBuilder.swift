@@ -264,10 +264,14 @@ final class PDFBuilder {
         for rec in snapshot.receipts {
             for (i, im) in rec.photos.enumerated() {
                 newPage()
-                var caption = "Чек №\(String(format: "%03d", rec.number)) · \(Fmt.date.string(from: rec.date)) · \(rec.store.isEmpty ? "магазин не указан" : rec.store) · \(Money.format(rec.total))"
-                if rec.photos.count > 1 { caption += " · фото \(i + 1) из \(rec.photos.count)" }
-                draw(attributed(caption, size: 11, bold: true), x: margin, top: y, width: pageW - margin * 2, height: 16)
-                y += 24
+                // заголовок чека: номер · дата · магазин · наименование(я) · сумма; длинное переносится, размер шрифта не уменьшается
+                for line in ReceiptCaption.lines(rec, photoIndex: i, photoCount: rec.photos.count) {
+                    let text = attributed(line, size: 11, bold: true)
+                    let h = textHeight(text, width: pageW - margin * 2)
+                    draw(text, x: margin, top: y, width: pageW - margin * 2, height: h + 2)
+                    y += h + 3
+                }
+                y += 8
                 if dry { continue }
                 guard let src = CGImageSourceCreateWithData(im.data as CFData, nil), let cg = CGImageSourceCreateImageAtIndex(src, 0, nil) else { continue }
                 let availW = pageW - margin * 2, availH = pageH - y - 44
