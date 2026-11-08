@@ -79,15 +79,19 @@ final class ExportFormattingTests: XCTestCase {
         }
         // цвета действительно в документе: светло-серый #F2F3F5 и итог #E9EAED присутствуют на странице таблицы
         let doc = try XCTUnwrap(PDFDocument(data: data))
-        func pixelCount(_ page: PDFPage, _ rgb: (Int, Int, Int)) -> Int {
-            let img = page.thumbnail(of: CGSize(width: 842 * 2, height: 595 * 2), for: .mediaBox)
-            guard let cg = img.cgImage(forProposedRect: nil, context: nil, hints: nil), let prov = cg.dataProvider, let bytes = prov.data as Data? else { return 0 }
-            let bpp = cg.bitsPerPixel / 8
+        func pixelCount(_ page: PDFPage, _ rgb: (Int, Int, Int), tol: Int = 4) -> Int {
+            let w = 842 * 2, h = 595 * 2
+            guard let ctx = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
+                                      space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue),
+                  let buf = ctx.data?.assumingMemoryBound(to: UInt8.self) else { return 0 }
+            ctx.setFillColor(CGColor(red: 1, green: 1, blue: 1, alpha: 1)); ctx.fill(CGRect(x: 0, y: 0, width: w, height: h))
+            let box = page.bounds(for: .mediaBox)
+            ctx.scaleBy(x: CGFloat(w) / box.width, y: CGFloat(h) / box.height)
+            page.draw(with: .mediaBox, to: ctx)
             var n = 0
-            var i = 0
-            while i + 2 < bytes.count {
-                if abs(Int(bytes[i]) - rgb.0) <= 1 && abs(Int(bytes[i + 1]) - rgb.1) <= 1 && abs(Int(bytes[i + 2]) - rgb.2) <= 1 { n += 1 }
-                i += bpp
+            for i in 0..<(w * h) {
+                let o = i * 4
+                if abs(Int(buf[o]) - rgb.0) <= tol && abs(Int(buf[o + 1]) - rgb.1) <= tol && abs(Int(buf[o + 2]) - rgb.2) <= tol { n += 1 }
             }
             return n
         }
