@@ -272,7 +272,8 @@ final class NumberingTests: XCTestCase {
         let rs = (1...3).map { make(proj, "Позиция-\($0)") }
         XCTAssertTrue(saver.saveNow())
         deleteAndSave([rs[1]])
-        let snap = try await XCTUnwrap(ReportService.makeSnapshot(container: p.container, projectID: proj.objectID, from: nil, to: nil))
+        let made = await ReportService.makeSnapshot(container: p.container, projectID: proj.objectID, from: nil, to: nil)
+        let snap = try XCTUnwrap(made)
         XCTAssertEqual(snap.receipts.map { $0.number }.sorted(), [1, 2])
         let doc = try XCTUnwrap(PDFDocument(data: PDFBuilder.build(snap)))
         let text = doc.string ?? ""
