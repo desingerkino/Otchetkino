@@ -29,6 +29,7 @@
 		432989183684844FA9937F52 /* Money.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C2D575C2447E55E1340924B /* Money.swift */; };
 		44AEFA982282EA7CFA70A8BD /* ReceiptEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D8D58F3D01A891B3C7E294 /* ReceiptEditorView.swift */; };
 		4585FC2076C4D47CABAE16EB /* Domain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3875299D2F2F8CFA6C299D01 /* Domain.swift */; };
+		45BE5CDE08E3022FB1FDC224 /* ComfortAndFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C93D9D28F4DA0157A6251E4 /* ComfortAndFlowTests.swift */; };
 		5509F7D5AF9F1529AF859C6F /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D94715E8A9493E46DF3567BC /* AppState.swift */; };
 		66620F7B645127F0048DAC15 /* BackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D283158F46803D338651D1 /* BackupService.swift */; };
 		6ADE837FFA6D83DAD97808E9 /* RekvizitApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46614C81F0566FD5B8AB5023 /* RekvizitApp.swift */; };
@@ -113,6 +114,7 @@
 		781CCC7D004A531F621D8B30 /* Info-macOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Info-macOS.plist"; sourceTree = "<group>"; };
 		786C0B5A3BDF091CE90B1724 /* PurchaseFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseFlow.swift; sourceTree = "<group>"; };
 		7AE854CC3479F672BBE21B74 /* PhoneRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneRootView.swift; sourceTree = "<group>"; };
+		7C93D9D28F4DA0157A6251E4 /* ComfortAndFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfortAndFlowTests.swift; sourceTree = "<group>"; };
 		8CF207614402AAB2019BCA06 /* PDFBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFBuilder.swift; sourceTree = "<group>"; };
 		92ADC44786704FBA990E6DC0 /* MacWorkspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacWorkspace.swift; sourceTree = "<group>"; };
 		94EDDA3C4E7C999065C369D6 /* Info-iOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Info-iOS.plist"; sourceTree = "<group>"; };
@@ -182,6 +184,7 @@
 			isa = PBXGroup;
 			children = (
 				9CA499E1215E97F7FD9BA94B /* AutosaveTests.swift */,
+				7C93D9D28F4DA0157A6251E4 /* ComfortAndFlowTests.swift */,
 				3AA76EC08A7695FFE5F6EC58 /* CoreTests.swift */,
 				63E6C36169443FD91F912A66 /* LayoutTests.swift */,
 				EA55F0BD711B004880BFD280 /* NumberingTests.swift */,
@@ -403,6 +406,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3A23670DE0CAFE8BD90CA1F3 /* AutosaveTests.swift in Sources */,
+				45BE5CDE08E3022FB1FDC224 /* ComfortAndFlowTests.swift in Sources */,
 				2EB8FF75B68E99C19904C25D /* CoreTests.swift in Sources */,
 				CAC278A33CB13A45BF34C975 /* LayoutTests.swift in Sources */,
 				0D17AA8D137A39F0DE82FBC6 /* NumberingTests.swift in Sources */,
