@@ -56,7 +56,6 @@ struct ReceiptForm: View {
         ScrollView {
             VStack(spacing: 14) {
                 statusBanner(review)
-                photoCard
                 RKSection("Чек") {
                     // номер слева, дата справа — одна строка, общая высота и центровка по вертикали
                     VStack(alignment: .leading, spacing: 5) {
@@ -106,6 +105,7 @@ struct ReceiptForm: View {
                         Text("Все позиции этого чека имеют общий номер \(receipt.numberText).").font(.caption).foregroundStyle(.secondary)
                     }
                 }
+                photoCard   // фотографии — ниже формы
                 if !receipt.rawText.isEmpty {
                     RKSection {
                         DisclosureGroup("Распознанный текст", isExpanded: $showRaw) {
