@@ -62,6 +62,10 @@ jobs:
             -derivedDataPath build ONLY_ACTIVE_ARCH=NO ARCHS="arm64 x86_64" CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=YES CODE_SIGNING_ALLOWED=YES 2>&1 | tail -5
           cd build/Build/Products/Local && lipo -archs Rekvizit.app/Contents/MacOS/Rekvizit && codesign -dv Rekvizit.app 2>&1 | head -3
           ditto -c -k --keepParent Rekvizit.app "$GITHUB_WORKSPACE/Rekvizit-macOS-local.zip"
+          # DMG: образ с приложением и ссылкой на «Программы»
+          mkdir -p "$RUNNER_TEMP/dmg" && cp -R Rekvizit.app "$RUNNER_TEMP/dmg/" && ln -s /Applications "$RUNNER_TEMP/dmg/Applications"
+          hdiutil create -volname "Реквизит" -srcfolder "$RUNNER_TEMP/dmg" -ov -format UDZO "$GITHUB_WORKSPACE/Rekvizit-macOS.dmg"
+          ls -la "$GITHUB_WORKSPACE/Rekvizit-macOS.dmg"
           # дымовой запуск: приложение должно открыться и не упасть
           ./Rekvizit.app/Contents/MacOS/Rekvizit > "$GITHUB_WORKSPACE/launch.log" 2>&1 &
           APP_PID=$!
@@ -81,6 +85,7 @@ jobs:
           name: Rekvizit-macOS-and-samples
           path: |
             Rekvizit-macOS-local.zip
+            Rekvizit-macOS.dmg
             mac-launch.png
             launch.log
             /tmp/rekvizit-samples/*
@@ -90,7 +95,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release view latest >/dev/null 2>&1 || gh release create latest --title "Последняя сборка" --notes "Автоматическая сборка из ветки main. Mac-приложение без подписи Apple (без iCloud) и примеры отчётов."
-          gh release upload latest Rekvizit-iOS-unsigned.ipa Rekvizit-macOS-local.zip /tmp/rekvizit-samples/sample-report.xlsx /tmp/rekvizit-samples/sample-report.pdf --clobber
+          gh release upload latest Rekvizit-iOS-unsigned.ipa Rekvizit-macOS-local.zip Rekvizit-macOS.dmg /tmp/rekvizit-samples/sample-report.xlsx /tmp/rekvizit-samples/sample-report.pdf --clobber
       - name: Сохранить сгенерированный Xcode-проект в репозиторий
         if: github.event_name == 'push'
         run: |
