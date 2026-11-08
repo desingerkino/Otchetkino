@@ -51,7 +51,8 @@ extension RProject {
     var liveReceipts: [RReceipt] { receiptList.filter { !$0.isBlank } }
     var displayName: String { name.isEmpty ? "Без названия" : name }
 
-    var nextReceiptNumber: Int32 { (receiptList.map { $0.number }.max() ?? 0) + 1 }
+    /// Следующий номер: после выравнивания номера идут подряд 1…N, значит новый чек получает N+1.
+    var nextReceiptNumber: Int32 { (receiptList.filter { !$0.isDeleted }.map { $0.number }.max() ?? 0) + 1 }
 
     func totals(from: Date? = nil, to: Date? = nil) -> ProjectTotals {
         var t = ProjectTotals()
@@ -245,15 +246,54 @@ enum DataOps {
         return r
     }
 
-    /// Последовательно перенумеровывает чеки проекта: по дате, затем по времени создания.
-    static func renumber(_ ctx: NSManagedObjectContext, project: RProject) {
-        let sorted = project.receiptList.sorted {
-            let a = $0.date ?? .distantPast, b = $1.date ?? .distantPast
+    /// ЕДИНЫЙ принцип нумерации: номера идут подряд 1…N без пропусков в порядке создания чеков.
+    /// Порядок задают (текущий номер, время создания, uuid), поэтому дата, сортировка и группировка номера не меняют,
+    /// а после удаления следующие чеки сдвигаются вверх. Изменения только вносятся в контекст; запись — одним `save()` вместе с остальным
+    /// (атомарно: либо удаление и новые номера записаны вместе, либо ничего).
+    @discardableResult
+    static func normalizeNumbers(_ project: RProject) -> Bool {
+        let live = (project.receipts as? Set<RReceipt> ?? []).filter { !$0.isDeleted }.sorted {
+            if $0.number != $1.number { return $0.number < $1.number }
+            let a = $0.createdAt ?? .distantPast, b = $1.createdAt ?? .distantPast
             if a != b { return a < b }
-            return ($0.createdAt ?? .distantPast) < ($1.createdAt ?? .distantPast)
+            return ($0.uuid?.uuidString ?? "") < ($1.uuid?.uuidString ?? "")
         }
-        for (i, r) in sorted.enumerated() { r.number = Int32(i + 1); r.touch() }
+        var changed = false
+        for (i, r) in live.enumerated() {
+            let n = Int32(i + 1)
+            if r.number != n { r.number = n; r.updatedAt = Date(); changed = true }
+        }
+        return changed
+    }
+
+    /// Ручная кнопка «Выровнять нумерацию»: закрывает пропуски и устраняет повторы, порядок создания сохраняется.
+    static func renumber(_ ctx: NSManagedObjectContext, project: RProject) {
+        normalizeNumbers(project)
         try? ctx.save()
+    }
+
+    /// Удаляет чеки (вместе с позициями, фото и результатами распознавания — каскадно) и сразу выравнивает номера оставшихся.
+    /// Всё попадает в один шаг отмены; запись в базу делает вызывающий (`saveNow()`), поэтому перенумерация не опережает сохранение.
+    static func deleteReceipts(_ ctx: NSManagedObjectContext, _ receipts: [RReceipt]) {
+        var projects = [RProject]()
+        for r in receipts where !r.isDeleted {
+            if let p = r.project, !projects.contains(where: { $0 === p }) { projects.append(p) }
+            ctx.delete(r)
+        }
+        for p in projects { normalizeNumbers(p) }
+        ctx.processPendingChanges()
+    }
+
+    /// Удаляет позиции; если в чеке не осталось ни одной — удаляется и сам чек (с выравниванием номеров).
+    static func deletePurchases(_ ctx: NSManagedObjectContext, _ purchases: [RPurchase]) {
+        var receipts = [RReceipt]()
+        for p in purchases {
+            if let r = p.receipt, !receipts.contains(where: { $0 === r }) { receipts.append(r) }
+            ctx.delete(p)
+        }
+        let empty = receipts.filter { r in !r.isDeleted && r.purchaseList.allSatisfy { $0.isDeleted } }
+        deleteReceipts(ctx, empty)
+        ctx.processPendingChanges()
     }
 
     static func delete(_ ctx: NSManagedObjectContext, _ objects: [NSManagedObject]) {

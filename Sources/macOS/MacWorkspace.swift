@@ -124,10 +124,11 @@ struct MacWorkspace: View {
         .sheet(item: $viewerPhotos) { PhotoViewer(photos: $0.photos, index: 0) }
         .sheet(isPresented: $showPeriod) { periodSheet }
         .reportExporter(reports)
-        .confirmationDialog("Удалить выбранные позиции (\(selection.count))? Это можно отменить (⌘Z).", isPresented: $confirmDelete, titleVisibility: .visible) {
-            Button("Удалить", role: .destructive) { deleteSelected(rows) }
+        .alert(deleteQuestion(rows), isPresented: $confirmDelete) {
             Button("Отмена", role: .cancel) {}
-        }
+            Button("Удалить", role: .destructive) { deleteSelected(rows) }
+                .keyboardShortcut(.defaultAction)   // Enter подтверждает только пока диалог открыт; Esc — отмена
+        } message: { Text("Это можно отменить: ⌘Z.") }
         .onChange(of: selection) { _ in
             if let first = rows.first(where: { selection.contains($0.id) }) { selectedReceiptID = first.receiptID }
         }
@@ -284,6 +285,7 @@ struct MacWorkspace: View {
                     Divider()
                 }
                 ReceiptForm(receipt: receipt).id(receipt.objectID)
+                    .environment(\.rkEnterAction, { enterPressed(receipt) })
             }
         } else {
             VStack(spacing: 10) {
@@ -359,6 +361,13 @@ struct MacWorkspace: View {
 
     // MARK: Действия
 
+    /// Enter в форме: сохранить текущую покупку и открыть следующую (только если сохранение удалось и форма не пуста).
+    private func enterPressed(_ current: RReceipt) {
+        guard let next = PurchaseFlow.saveAndCreateNext(project: project, ctx: ctx, current: current, saver: saver) else { return }
+        selectedReceiptID = next.objectID
+        if let first = next.purchaseList.first { selection = [first.objectID] }
+    }
+
     private func addManual() {
         saver.saveNow()   // предыдущая покупка уже записана
         let r = AddFlow.createManual(project: project, ctx: ctx)
@@ -412,10 +421,27 @@ struct MacWorkspace: View {
         viewerPhotos = ViewerBox(photos: r.photoList)
     }
 
-    private func deleteSelected(_ rows: [PurchaseRow]) {
-        for row in selectedRows(rows) {
-            if let obj = try? ctx.existingObject(with: row.id) { ctx.delete(obj) }
+    private func deleteQuestion(_ rows: [PurchaseRow]) -> String {
+        let sel = selectedRows(rows)
+        let numbers = Array(Set(sel.map { $0.number })).sorted()
+        if numbers.count == 1 {
+            let text = Fmt.number(Int32(numbers[0]))
+            let wholeReceipt = sel.first.flatMap { try? ctx.existingObject(with: $0.receiptID) as? RReceipt }
+                .map { r in r.purchaseList.allSatisfy { p in sel.contains(where: { $0.id == p.objectID }) } } ?? true
+            return wholeReceipt ? "Удалить покупку \(text) вместе со всеми данными и фотографиями чека?"
+                                : "Удалить выбранную позицию из чека \(text) вместе с её данными и фотографиями?"
         }
+        return "Удалить выбранные покупки (\(sel.count)) вместе со всеми данными и фотографиями чеков?"
+    }
+
+    private func deleteSelected(_ rows: [PurchaseRow]) {
+        var receipts: [RReceipt] = [], purchases: [RPurchase] = []
+        for row in selectedRows(rows) {
+            guard let obj = try? ctx.existingObject(with: row.id) else { continue }
+            if let r = obj as? RReceipt { receipts.append(r) } else if let p = obj as? RPurchase { purchases.append(p) }
+        }
+        DataOps.deletePurchases(ctx, purchases)       // удаление + выравнивание номеров — один шаг отмены
+        DataOps.deleteReceipts(ctx, receipts)
         selection = []; selectedReceiptID = nil
         saver.saveNow()
     }

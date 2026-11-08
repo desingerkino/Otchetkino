@@ -43,9 +43,9 @@ struct SettingsView: View {
                     Text("Магазины запоминаются сами при вводе и предлагаются подсказкой. Здесь их можно переименовать, объединить дубли или убрать лишние — покупки при этом не теряются.")
                 }
                 Section {
-                    Button("Перенумеровать чеки по порядку") { confirmRenumber = true }
+                    Button("Выровнять нумерацию чеков") { confirmRenumber = true }
                 } header: { Text("Нумерация чеков") } footer: {
-                    Text("Номера присваиваются автоматически и не повторяются. Если вы удалили чек из середины списка, можно привести номера в порядок: по дате покупки, без пропусков.")
+                    Text("Номера идут подряд с №001 в порядке создания чеков и сами выравниваются после удаления. Дата и сортировка номера не меняют. Эта кнопка нужна только для старых данных.")
                 }
                 syncSection
                 backupSection
@@ -71,8 +71,8 @@ struct SettingsView: View {
             .sheet(item: Binding(get: { advanceKind.map { KindBox(kind: $0) } }, set: { advanceKind = $0?.kind })) { box in
                 AdvanceSheet(project: project, kind: box.kind)
             }
-            .confirmationDialog("Перенумеровать все чеки проекта?", isPresented: $confirmRenumber, titleVisibility: .visible) {
-                Button("Перенумеровать") { DataOps.renumber(ctx, project: project) }
+            .confirmationDialog("Выровнять нумерацию чеков проекта?", isPresented: $confirmRenumber, titleVisibility: .visible) {
+                Button("Выровнять") { DataOps.renumber(ctx, project: project) }
                 Button("Отмена", role: .cancel) {}
             }
             .confirmationDialog("Удалить проект «\(project.displayName)» со всеми данными?", isPresented: $confirmDeleteProject, titleVisibility: .visible) {

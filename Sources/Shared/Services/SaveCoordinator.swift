@@ -117,7 +117,7 @@ final class SaveCoordinator: ObservableObject {
         }
         for r in receipts where !r.isDeleted {
             if r.isBlank && !activeReceipts.contains(r.objectID) {
-                context.delete(r)
+                DataOps.deleteReceipts(context, [r])   // пустая форма исчезает, номера остальных остаются подряд
                 continue
             }
             let storeChanged = r.isInserted || r.changedValues()["store"] != nil
