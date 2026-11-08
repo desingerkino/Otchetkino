@@ -231,7 +231,6 @@ enum ReceiptParser {
 
         func amountsNear(_ i: Int) -> [Int64] {
             var found = amounts(in: lines[i]).map { $0.kop }
-            if found.isEmpty, i + 1 < lines.count, letterCount(lines[i + 1]) <= 4 { found = amounts(in: lines[i + 1]).map { $0.kop } }
             if found.isEmpty {
                 // «ИТОГО 1000 00» — копейки отделены пробелом
                 let ns = lines[i] as NSString
@@ -240,6 +239,12 @@ enum ReceiptParser {
                    let w = Int64(ns.substring(with: m.range(at: 1))), let f = Int64(ns.substring(with: m.range(at: 2))) {
                     found = [w * 100 + f]
                 }
+            }
+            // сумма могла уйти на следующую строку (но не дата и не время)
+            if found.isEmpty, i + 1 < lines.count, letterCount(lines[i + 1]) <= 4,
+               !lines[i + 1].contains(":"), !lines[i + 1].contains(where: { $0 == "/" }),
+               lines[i + 1].range(of: #"\d{1,2}[.,]\d{1,2}[.,]\d{2,4}"#, options: .regularExpression) == nil {
+                found = amounts(in: lines[i + 1]).map { $0.kop }
             }
             return found
         }
