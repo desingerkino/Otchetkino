@@ -10,8 +10,10 @@
 		08C4C6CC6D29C13AB58502B3 /* ImageTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF22E764FE6C5570FB84CCEF /* ImageTools.swift */; };
 		0D17AA8D137A39F0DE82FBC6 /* NumberingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA55F0BD711B004880BFD280 /* NumberingTests.swift */; };
 		13B04191D2252A6B14235A8B /* Domain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3875299D2F2F8CFA6C299D01 /* Domain.swift */; };
+		152F21D4B3BE658657C899D2 /* RowSelectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E091DABEE91E571C355AF4 /* RowSelectionTests.swift */; };
 		1533202797564625826FE7A6 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28C7BA29CE5FE0F8751460A /* Persistence.swift */; };
 		17624D4F9E4630D2DF603E66 /* StoreDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D86BB31D3A05A3246CD985D /* StoreDirectory.swift */; };
+		182090805C139DE8E53AE068 /* TableHighlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C9881BD8F2EE8D0AB3E4EB8 /* TableHighlight.swift */; };
 		1CF22338CE9E8A23A47D5225 /* PurchasesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C52326FF45AE8A4AB5A43E2 /* PurchasesView.swift */; };
 		1F51A2612F73CDDC6344AB64 /* PhoneRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AE854CC3479F672BBE21B74 /* PhoneRootView.swift */; };
 		20353E8033F99893947DA87D /* ReceiptParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38542D5491C24E2F5503E08 /* ReceiptParser.swift */; };
@@ -99,7 +101,9 @@
 		18F04FDF8651311E9A9F41AF /* ParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParserTests.swift; sourceTree = "<group>"; };
 		199651B8EF81DB0768903D6F /* MacRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacRootView.swift; sourceTree = "<group>"; };
 		24D6D833984D67E3800BA70C /* OCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRService.swift; sourceTree = "<group>"; };
+		2C9881BD8F2EE8D0AB3E4EB8 /* TableHighlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableHighlight.swift; sourceTree = "<group>"; };
 		2EC4BA7538C64FDA2BEBE0A5 /* Fields.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fields.swift; sourceTree = "<group>"; };
+		33E091DABEE91E571C355AF4 /* RowSelectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RowSelectionTests.swift; sourceTree = "<group>"; };
 		3875299D2F2F8CFA6C299D01 /* Domain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain.swift; sourceTree = "<group>"; };
 		3AA76EC08A7695FFE5F6EC58 /* CoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreTests.swift; sourceTree = "<group>"; };
 		46614C81F0566FD5B8AB5023 /* RekvizitApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RekvizitApp.swift; sourceTree = "<group>"; };
@@ -165,6 +169,7 @@
 			children = (
 				199651B8EF81DB0768903D6F /* MacRootView.swift */,
 				92ADC44786704FBA990E6DC0 /* MacWorkspace.swift */,
+				2C9881BD8F2EE8D0AB3E4EB8 /* TableHighlight.swift */,
 			);
 			path = macOS;
 			sourceTree = "<group>";
@@ -190,6 +195,7 @@
 				EA55F0BD711B004880BFD280 /* NumberingTests.swift */,
 				5370E0C936B57843F4C713FC /* OCRQualityTests.swift */,
 				18F04FDF8651311E9A9F41AF /* ParserTests.swift */,
+				33E091DABEE91E571C355AF4 /* RowSelectionTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -412,6 +418,7 @@
 				0D17AA8D137A39F0DE82FBC6 /* NumberingTests.swift in Sources */,
 				E6184A2123AA1627CEAC51C5 /* OCRQualityTests.swift in Sources */,
 				C2A628DFC243FC12A4AD7881 /* ParserTests.swift in Sources */,
+				152F21D4B3BE658657C899D2 /* RowSelectionTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -445,6 +452,7 @@
 				E1DD667B561927DA9787A61A /* SaveCoordinator.swift in Sources */,
 				B0B0616D0DC296693A0D8B86 /* SettingsView.swift in Sources */,
 				17624D4F9E4630D2DF603E66 /* StoreDirectory.swift in Sources */,
+				182090805C139DE8E53AE068 /* TableHighlight.swift in Sources */,
 				BB6B259AA65D1DD0E7B61AC2 /* Theme.swift in Sources */,
 				97FF0EF826E70784DFE9E3CA /* XLSXBuilder.swift in Sources */,
 				2105A380331B8639EC20CE84 /* ZipWriter.swift in Sources */,
