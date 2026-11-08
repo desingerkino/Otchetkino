@@ -78,7 +78,7 @@ final class PersistenceController: ObservableObject {
                 let req = NSFetchRequest<RReceipt>(entityName: "RReceipt")
                 req.predicate = NSPredicate(format: "isDraft == YES")
                 req.fetchLimit = 1
-                return ((try? probe.count(for: req)) ?? 0) > 0
+                return ((try? probe.count(for: req)) ?? 0) > 0 || Maintenance.numbersNeedFix(probe)
             }
             if needsMigration { _ = try? await BackupService.create(container: container) }
             let ctx = container.newBackgroundContext()
@@ -86,6 +86,7 @@ final class PersistenceController: ObservableObject {
             await ctx.perform {
                 Maintenance.clearDraftFlags(ctx)
                 Maintenance.purgeBlankReceipts(ctx)
+                Maintenance.fixDuplicateReceiptNumbers(ctx)
                 if ctx.hasChanges { try? ctx.save() }
             }
         }
@@ -166,7 +167,8 @@ enum Maintenance {
     /// Удаляет пустые формы (без фото, магазина, комментария и заполненных позиций).
     static func purgeBlankReceipts(_ ctx: NSManagedObjectContext) {
         let req = NSFetchRequest<RReceipt>(entityName: "RReceipt")
-        for r in (try? ctx.fetch(req)) ?? [] where r.isBlank { ctx.delete(r) }
+        let blanks = ((try? ctx.fetch(req)) ?? []).filter { $0.isBlank }
+        DataOps.deleteReceipts(ctx, blanks)
     }
 
     static func dedupeCategories(_ ctx: NSManagedObjectContext) {
@@ -189,27 +191,19 @@ enum Maintenance {
         }
     }
 
-    /// Если на двух устройствах одновременно появились чеки с одним номером — более поздний получает следующий свободный номер.
+    /// Нумерация чеков во всех проектах: без пропусков и повторов (в том числе после синхронизации с другого устройства).
     static func fixDuplicateReceiptNumbers(_ ctx: NSManagedObjectContext) {
         let req = NSFetchRequest<RProject>(entityName: "RProject")
-        guard let projects = try? ctx.fetch(req) else { return }
-        for project in projects {
-            let receipts = (project.receipts as? Set<RReceipt> ?? []).sorted {
-                if $0.number != $1.number { return $0.number < $1.number }
-                let a = $0.createdAt ?? .distantPast, b = $1.createdAt ?? .distantPast
-                if a != b { return a < b }
-                return ($0.uuid?.uuidString ?? "") < ($1.uuid?.uuidString ?? "")
-            }
-            var used = Set<Int32>()
-            var maxNumber = receipts.map { $0.number }.max() ?? 0
-            for r in receipts {
-                if r.number <= 0 || used.contains(r.number) {
-                    maxNumber += 1
-                    r.number = maxNumber
-                    r.updatedAt = Date()
-                }
-                used.insert(r.number)
-            }
+        for project in (try? ctx.fetch(req)) ?? [] { DataOps.normalizeNumbers(project) }
+    }
+
+    /// Есть ли проекты с пропусками или повторами в нумерации.
+    static func numbersNeedFix(_ ctx: NSManagedObjectContext) -> Bool {
+        let req = NSFetchRequest<RProject>(entityName: "RProject")
+        for project in (try? ctx.fetch(req)) ?? [] {
+            let nums = (project.receipts as? Set<RReceipt> ?? []).map { Int($0.number) }.sorted()
+            if !nums.isEmpty, nums != Array(1...nums.count) { return true }
         }
+        return false
     }
 }

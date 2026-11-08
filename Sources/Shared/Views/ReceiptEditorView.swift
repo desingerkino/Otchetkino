@@ -121,9 +121,10 @@ struct ReceiptForm: View {
             .padding(14)
         }
         .background(Color.rkBackground)
-        .confirmationDialog("Удалить чек \(receipt.numberText) вместе с позициями и фотографиями?", isPresented: $confirmDelete, titleVisibility: .visible) {
-            Button("Удалить", role: .destructive) { ctx.delete(receipt); dismiss() }
+        .alert("Удалить покупку \(receipt.numberText) вместе со всеми данными и фотографиями чека?", isPresented: $confirmDelete) {
             Button("Отмена", role: .cancel) {}
+            Button("Удалить", role: .destructive) { DataOps.deleteReceipts(ctx, [receipt]); SaveCoordinator.shared.saveNow(); dismiss() }
+                .keyboardShortcut(.defaultAction)
         }
         #if os(iOS)
         .fullScreenCover(item: $viewer) { v in PhotoViewer(photos: v.photos, index: v.index) }
@@ -209,7 +210,7 @@ struct ItemSection: View {
     var body: some View {
         RKSection("Позиция \(index)") {
             RKLabeled(title: "Наименование товара") {
-                RKTextField(title: "Что куплено", value: $purchase.title)
+                RKTextField(title: "Что куплено", value: $purchase.title, autofocus: index == 1)
             }
             HStack(alignment: .top, spacing: 12) {
                 RKLabeled(title: "Сумма", warn: warnAmount ? "проверьте" : nil) {

@@ -132,7 +132,7 @@ struct PurchasesView: View {
             .sheet(isPresented: $showFilters) { FilterSheet(filter: $filter, project: project) }
             .sheet(item: $editing) { t in ReceiptEditorSheet(receipt: t.receipt, isNew: false) }
             .confirmationDialog("Удалить эту покупку?", isPresented: Binding(get: { toDelete != nil }, set: { if !$0 { toDelete = nil } }), titleVisibility: .visible) {
-                Button("Удалить", role: .destructive) { if let p = toDelete { ctx.delete(p); try? ctx.save() }; toDelete = nil }
+                Button("Удалить", role: .destructive) { if let p = toDelete { DataOps.deletePurchases(ctx, [p]); try? ctx.save() }; toDelete = nil }
                 Button("Отмена", role: .cancel) { toDelete = nil }
             }
         }

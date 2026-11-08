@@ -35,9 +35,10 @@ struct ReceiptsView: View {
                 ToolbarItem(placement: .primaryAction) { AddPurchaseButton(project: project) { Label("Добавить", systemImage: "plus") } }
             }
             .sheet(item: $editing) { t in ReceiptEditorSheet(receipt: t.receipt, isNew: false) }
-            .confirmationDialog("Удалить чек вместе с позициями и фотографиями?", isPresented: Binding(get: { toDelete != nil }, set: { if !$0 { toDelete = nil } }), titleVisibility: .visible) {
-                Button("Удалить", role: .destructive) { if let r = toDelete { ctx.delete(r); try? ctx.save() }; toDelete = nil }
+            .alert("Удалить покупку \(toDelete?.numberText ?? "") вместе со всеми данными и фотографиями чека?", isPresented: Binding(get: { toDelete != nil }, set: { if !$0 { toDelete = nil } })) {
                 Button("Отмена", role: .cancel) { toDelete = nil }
+                Button("Удалить", role: .destructive) { if let r = toDelete { DataOps.deleteReceipts(ctx, [r]); try? ctx.save() }; toDelete = nil }
+                    .keyboardShortcut(.defaultAction)
             }
         }
     }

@@ -1,6 +1,15 @@
 import SwiftUI
 import CoreData
 
+/// Действие по Enter в однострочных полях формы покупки (на Mac: сохранить и создать следующую покупку).
+private struct RKEnterActionKey: EnvironmentKey { static let defaultValue: (() -> Void)? = nil }
+extension EnvironmentValues {
+    var rkEnterAction: (() -> Void)? {
+        get { self[RKEnterActionKey.self] }
+        set { self[RKEnterActionKey.self] = newValue }
+    }
+}
+
 // MARK: - Текстовое поле с отложенной записью
 // Текст сначала лежит в поле, а в данные попадает через короткую паузу, при уходе из поля, при смене записи
 // и перед каждым сохранением. Поэтому одна «серия» набора — один шаг отмены, а автосохранение не пишет на каждую букву.
@@ -11,7 +20,9 @@ struct RKTextField: View {
     var axis: Axis = .horizontal
     var warn = false
     var idleDelay: TimeInterval = 0.6
+    var autofocus = false
 
+    @Environment(\.rkEnterAction) private var enterAction
     @State private var text = ""
     @State private var work: DispatchWorkItem?
     @FocusState private var focused: Bool
@@ -20,7 +31,12 @@ struct RKTextField: View {
         TextField(title, text: $text, axis: axis)
             .focused($focused)
             .rkField(focused: focused, warn: warn)
-            .onAppear { text = value }
+            // Enter в многострочном поле (комментарий, назначение) — это перенос строки, а не создание покупки
+            .onSubmit { if axis == .horizontal { commit(); enterAction?() } }
+            .onAppear {
+                text = value
+                if autofocus && value.isEmpty { DispatchQueue.main.async { focused = true } }
+            }
             .onChange(of: text) { _ in schedule() }
             .onChange(of: value) { new in if !focused && new != text { text = new } }
             .onChange(of: focused) { f in if !f { commit() } }
@@ -50,6 +66,7 @@ struct AmountField: View {
     @Binding var kop: Int64
     var warn = false
 
+    @Environment(\.rkEnterAction) private var enterAction
     @State private var text = ""
     @State private var work: DispatchWorkItem?
     @FocusState private var focused: Bool
@@ -58,6 +75,7 @@ struct AmountField: View {
         HStack(spacing: 6) {
             TextField(title, text: $text)
                 .textFieldStyle(.plain)
+                .onSubmit { commit(); enterAction?() }
                 .multilineTextAlignment(.trailing)
                 .font(.body.monospacedDigit())
                 .focused($focused)
@@ -113,6 +131,7 @@ struct StoreField: View {
     var warn = false
 
     @Environment(\.managedObjectContext) private var ctx
+    @Environment(\.rkEnterAction) private var enterAction
     @State private var text = ""
     @State private var suggestions: [String] = []
     @State private var skipNext = false
@@ -124,6 +143,10 @@ struct StoreField: View {
             TextField("Магазин / организация", text: $text)
                 .focused($focused)
                 .rkField(focused: focused, warn: warn)
+                // Enter при открытой подсказке выбирает её; без подсказок — как в остальных полях формы
+                .onSubmit {
+                    if let first = suggestions.first { choose(first) } else { commit(); enterAction?() }
+                }
             if !suggestions.isEmpty {
                 VStack(spacing: 0) {
                     ForEach(Array(suggestions.enumerated()), id: \.offset) { idx, name in

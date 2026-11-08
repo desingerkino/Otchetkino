@@ -82,7 +82,12 @@ final class SaveCoordinator: ObservableObject {
             return true
         }
         state = .saving
+        // служебные правки перед записью (дата изменения, написание магазина) — не шаг отмены: иначе ⌘Z после автосохранения
+        // сначала «отменял» бы невидимое изменение, а не действие пользователя
+        context.undoManager?.disableUndoRegistration()
         prepareForSave()
+        context.processPendingChanges()
+        context.undoManager?.enableUndoRegistration()
         do {
             try context.save()
             state = .saved
@@ -117,7 +122,7 @@ final class SaveCoordinator: ObservableObject {
         }
         for r in receipts where !r.isDeleted {
             if r.isBlank && !activeReceipts.contains(r.objectID) {
-                context.delete(r)
+                DataOps.deleteReceipts(context, [r])   // пустая форма исчезает, номера остальных остаются подряд
                 continue
             }
             let storeChanged = r.isInserted || r.changedValues()["store"] != nil
