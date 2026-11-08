@@ -243,6 +243,8 @@ struct MacWorkspace: View {
             .listStyle(.inset)
             .scrollContentBackground(.hidden)
             .background(Color.rkBackground)
+            .background(NoSelectionHighlight())          // без системной подсветки строки: цвет выбора задаёт только приложение
+            .transaction { $0.animation = nil }         // без анимации перехода между цветами строк
             .contextMenu(forSelectionType: PurchaseRow.ID.self) { ids in
                 if !ids.isEmpty {
                     Button("Изменить выбранные…") { showBulk = true }
