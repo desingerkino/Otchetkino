@@ -35,6 +35,7 @@ struct MacWorkspace: View {
     @StateObject private var reports = ReportController()
 
     @State private var selection = Set<PurchaseRow.ID>()
+    @State private var hoveredRow: PurchaseRow.ID?
     @State private var selectedReceiptID: NSManagedObjectID?
     @State private var filter = PurchaseFilter()
     @State private var showFilters = false
@@ -164,6 +165,12 @@ struct MacWorkspace: View {
                 Label(filter.isActive ? "Фильтры включены" : "Фильтры", systemImage: filter.isActive ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
             }
             .buttonStyle(RKSecondaryButtonStyle())
+            .frame(height: 32)
+            // та же функция, что и «+» на панели инструментов и ⌘N
+            Button { addManual() } label: { Label("Добавить", systemImage: "plus") }
+                .buttonStyle(RKPrimaryButtonStyle())
+                .frame(height: 32)
+                .help("Новая покупка (⌘N)")
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 14)
@@ -198,9 +205,14 @@ struct MacWorkspace: View {
                         ForEach(Array(g.rows.enumerated()), id: \.element.id) { index, r in
                             let selected = selection.contains(r.id)
                             rowView(r, selected: selected)
+                                .onHover { inside in
+                                    if inside { hoveredRow = r.id } else if hoveredRow == r.id { hoveredRow = nil }
+                                }
                                 .listRowBackground(
                                     RoundedRectangle(cornerRadius: 6, style: .continuous)
                                         .fill(selected ? Color.rkAccent : (index % 2 == 0 ? Color.rkRowOdd : Color.rkRowEven))
+                                        .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                            .fill(Color.rkAccent.opacity(!selected && hoveredRow == r.id ? 0.08 : 0)))
                                         .padding(.horizontal, 2)
                                 )
                         }

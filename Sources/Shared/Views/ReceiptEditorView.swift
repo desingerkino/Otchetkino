@@ -48,6 +48,8 @@ struct ReceiptForm: View {
     @State private var confirmDelete = false
     @State private var showRaw = false
 
+    private static let dateRowHeight: CGFloat = 34
+
     var body: some View {
         let _ = refresher.tick
         let review = ocr.review[receipt.objectID] ?? []
@@ -56,15 +58,27 @@ struct ReceiptForm: View {
                 statusBanner(review)
                 photoCard
                 RKSection("Чек") {
-                    HStack(alignment: .top, spacing: 12) {
-                        RKLabeled(title: "Номер") {
-                            Text(receipt.numberText).font(.body.monospacedDigit().weight(.semibold)).frame(minHeight: 34, alignment: .leading)
+                    // номер слева, дата справа — одна строка, общая высота и центровка по вертикали
+                    VStack(alignment: .leading, spacing: 5) {
+                        HStack(spacing: 6) {
+                            Text("Номер и дата покупки").font(.caption).foregroundStyle(.secondary)
+                            if review.contains("дата") {
+                                Text("проверьте").font(.caption2.weight(.semibold)).foregroundStyle(Color.rkWarn)
+                            }
                         }
-                        RKLabeled(title: "Дата покупки", warn: review.contains("дата") ? "проверьте" : nil) {
+                        HStack(alignment: .center, spacing: 12) {
+                            Text(receipt.numberText)
+                                .font(.title3.monospacedDigit().weight(.bold))
+                                .frame(height: Self.dateRowHeight, alignment: .center)
+                            Spacer(minLength: 8)
                             DatePicker("Дата покупки", selection: Binding(get: { receipt.date ?? Date() }, set: { receipt.date = $0 }), displayedComponents: .date)
                                 .labelsHidden()
+                                #if os(macOS)
+                                .datePickerStyle(.field)
+                                #endif
+                                .fixedSize()
+                                .frame(height: Self.dateRowHeight, alignment: .center)
                         }
-                        Spacer(minLength: 0)
                     }
                     RKLabeled(title: "Магазин / организация", warn: review.contains("магазин") ? "проверьте" : nil) {
                         StoreField(value: $receipt.store, warn: review.contains("магазин"))
