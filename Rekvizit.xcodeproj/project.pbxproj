@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		022AEDFF9BE2350672AFFCAA /* AddReceiptPhotosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BF5B38BC6FC9DFE1E756B1E /* AddReceiptPhotosTests.swift */; };
 		08C4C6CC6D29C13AB58502B3 /* ImageTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF22E764FE6C5570FB84CCEF /* ImageTools.swift */; };
 		0D17AA8D137A39F0DE82FBC6 /* NumberingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA55F0BD711B004880BFD280 /* NumberingTests.swift */; };
 		13B04191D2252A6B14235A8B /* Domain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3875299D2F2F8CFA6C299D01 /* Domain.swift */; };
@@ -118,6 +119,7 @@
 		781CCC7D004A531F621D8B30 /* Info-macOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Info-macOS.plist"; sourceTree = "<group>"; };
 		786C0B5A3BDF091CE90B1724 /* PurchaseFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseFlow.swift; sourceTree = "<group>"; };
 		7AE854CC3479F672BBE21B74 /* PhoneRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneRootView.swift; sourceTree = "<group>"; };
+		7BF5B38BC6FC9DFE1E756B1E /* AddReceiptPhotosTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddReceiptPhotosTests.swift; sourceTree = "<group>"; };
 		7C93D9D28F4DA0157A6251E4 /* ComfortAndFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComfortAndFlowTests.swift; sourceTree = "<group>"; };
 		8CF207614402AAB2019BCA06 /* PDFBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFBuilder.swift; sourceTree = "<group>"; };
 		92ADC44786704FBA990E6DC0 /* MacWorkspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacWorkspace.swift; sourceTree = "<group>"; };
@@ -188,6 +190,7 @@
 		72699A22012C906E19C97F1F /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				7BF5B38BC6FC9DFE1E756B1E /* AddReceiptPhotosTests.swift */,
 				9CA499E1215E97F7FD9BA94B /* AutosaveTests.swift */,
 				7C93D9D28F4DA0157A6251E4 /* ComfortAndFlowTests.swift */,
 				3AA76EC08A7695FFE5F6EC58 /* CoreTests.swift */,
@@ -411,6 +414,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				022AEDFF9BE2350672AFFCAA /* AddReceiptPhotosTests.swift in Sources */,
 				3A23670DE0CAFE8BD90CA1F3 /* AutosaveTests.swift in Sources */,
 				45BE5CDE08E3022FB1FDC224 /* ComfortAndFlowTests.swift in Sources */,
 				2EB8FF75B68E99C19904C25D /* CoreTests.swift in Sources */,

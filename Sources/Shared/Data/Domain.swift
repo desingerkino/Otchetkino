@@ -221,6 +221,19 @@ enum DataOps {
         return ph
     }
 
+    /// Прикрепляет фотографии к чеку, добавляя к существующим. Точные копии (по байтам) уже имеющихся и повторы внутри выбора пропускаются.
+    @discardableResult
+    static func attachPhotos(_ ctx: NSManagedObjectContext, datas: [Data], to receipt: RReceipt) -> (added: Int, skipped: Int) {
+        var known = receipt.photoList.compactMap { $0.data }
+        var added = 0, skipped = 0
+        for d in datas {
+            if known.contains(d) { skipped += 1; continue }
+            _ = addPhoto(ctx, data: d, to: receipt)
+            known.append(d); added += 1
+        }
+        return (added, skipped)
+    }
+
     @discardableResult
     static func addItemPhoto(_ ctx: NSManagedObjectContext, data: Data, to purchase: RPurchase) -> RPhoto {
         let ph = RPhoto(context: ctx)
