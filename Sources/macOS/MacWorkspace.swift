@@ -195,14 +195,19 @@ struct MacWorkspace: View {
             List(selection: $selection) {
                 ForEach(groups) { g in
                     Section {
-                        ForEach(g.rows) { r in rowView(r) }
-                    } header: {
-                        HStack {
-                            Text(Fmt.dayHeader.string(from: g.day).uppercased()).font(.caption.weight(.bold)).foregroundStyle(Color.rkAccent)
-                            Spacer()
-                            Text(Money.format(g.total)).font(.caption.weight(.semibold).monospacedDigit()).foregroundStyle(.secondary)
+                        ForEach(Array(g.rows.enumerated()), id: \.element.id) { index, r in
+                            let selected = selection.contains(r.id)
+                            rowView(r, selected: selected)
+                                .listRowBackground(
+                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                        .fill(selected ? Color.rkAccent : (index % 2 == 0 ? Color.rkRowOdd : Color.rkRowEven))
+                                        .padding(.horizontal, 2)
+                                )
                         }
-                        .padding(.vertical, 3)
+                    } header: {
+                        Text(Fmt.dayHeader.string(from: g.day).uppercased())
+                            .font(.caption.weight(.bold)).foregroundStyle(Color.rkAccent)
+                            .padding(.top, 10).padding(.bottom, 2)
                     }
                 }
             }
@@ -229,17 +234,18 @@ struct MacWorkspace: View {
         }
     }
 
-    private func rowView(_ r: PurchaseRow) -> some View {
-        HStack(spacing: 10) {
-            Text(String(format: "%03d", r.number)).monospacedDigit().foregroundStyle(.secondary).frame(width: Self.colNumber, alignment: .leading)
+    private func rowView(_ r: PurchaseRow, selected: Bool) -> some View {
+        let secondary: Color = selected ? .white.opacity(0.85) : .secondary
+        return HStack(spacing: 10) {
+            Text(String(format: "%03d", r.number)).monospacedDigit().foregroundStyle(secondary).frame(width: Self.colNumber, alignment: .leading)
             Text(r.title.isEmpty ? "—" : r.title).lineLimit(2)
-                .foregroundStyle(r.isPlaceholder ? Color.secondary : Color.primary)
+                .foregroundStyle(selected ? Color.white : (r.isPlaceholder ? Color.secondary : Color.primary))
                 .frame(maxWidth: .infinity, alignment: .leading)
-            Text(r.category).lineLimit(1).foregroundStyle(.secondary).frame(width: Self.colCategory, alignment: .leading)
-            Text(r.scenes).lineLimit(1).foregroundStyle(.secondary).frame(width: Self.colScenes, alignment: .leading)
-            Text(r.store).lineLimit(1).foregroundStyle(.secondary).frame(width: Self.colStore, alignment: .leading)
-            Text(Money.format(r.amount)).monospacedDigit().fontWeight(.medium).frame(width: Self.colAmount, alignment: .trailing)
-            Text(r.hasReceipt ? "есть" : "без чека").font(.caption).foregroundStyle(.secondary).frame(width: Self.colReceipt, alignment: .leading)
+            Text(r.category).lineLimit(1).foregroundStyle(secondary).frame(width: Self.colCategory, alignment: .leading)
+            Text(r.scenes).lineLimit(1).foregroundStyle(secondary).frame(width: Self.colScenes, alignment: .leading)
+            Text(r.store).lineLimit(1).foregroundStyle(secondary).frame(width: Self.colStore, alignment: .leading)
+            Text(Money.format(r.amount)).monospacedDigit().fontWeight(.medium).foregroundStyle(selected ? Color.white : Color.primary).frame(width: Self.colAmount, alignment: .trailing)
+            Text(r.hasReceipt ? "есть" : "без чека").font(.caption).foregroundStyle(secondary).frame(width: Self.colReceipt, alignment: .leading)
         }
         .font(.callout)
         .padding(.vertical, 3)

@@ -36,6 +36,9 @@ extension Color {
     /// Тонкие границы полей и карточек.
     static let rkBorder = dynamic(light: (0.80, 0.815, 0.84), dark: (0.33, 0.34, 0.37))
     /// Едва заметный фон заголовков дней и выбранных блоков.
+    /// Чередование строк таблицы: белая / #F2F3F5
+    static let rkRowOdd = dynamic(light: (1.0, 1.0, 1.0), dark: (0.15, 0.155, 0.17))
+    static let rkRowEven = dynamic(light: (0.949, 0.953, 0.961), dark: (0.19, 0.195, 0.21))
     static let rkSoft = dynamic(light: (0.925, 0.93, 0.94), dark: (0.19, 0.195, 0.21))
 }
 
