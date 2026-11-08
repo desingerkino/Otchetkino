@@ -49,6 +49,7 @@
 		97FF0EF826E70784DFE9E3CA /* XLSXBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A29BE9946502461B1A3D6443 /* XLSXBuilder.swift */; };
 		9A64791050B35A756DC19628 /* StoreDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D86BB31D3A05A3246CD985D /* StoreDirectory.swift */; };
 		9D83F4736A5160E9013B7AC7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FD0306135D0CD01C02958E15 /* Assets.xcassets */; };
+		A3959C5D780549D27AE2E934 /* ExportFormattingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 625F80D7C812F68B3834C31D /* ExportFormattingTests.swift */; };
 		AE2AA4E7069CA3A9E75133DB /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 020E4D721446CAFFB1B0846E /* HomeView.swift */; };
 		B0B0616D0DC296693A0D8B86 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C77FC1C400DDDB9D57B5FA1 /* SettingsView.swift */; };
 		B5333683AA39106A3430F5B1 /* ImageTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF22E764FE6C5570FB84CCEF /* ImageTools.swift */; };
@@ -108,6 +109,7 @@
 		535AA622B25EF56F05956599 /* ReceiptCaption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptCaption.swift; sourceTree = "<group>"; };
 		5370E0C936B57843F4C713FC /* OCRQualityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRQualityTests.swift; sourceTree = "<group>"; };
 		60AD02CBE7BA5D2EEC15E954 /* ProjectSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectSheets.swift; sourceTree = "<group>"; };
+		625F80D7C812F68B3834C31D /* ExportFormattingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportFormattingTests.swift; sourceTree = "<group>"; };
 		633D5A87D481FD302CA63E1E /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		6C52326FF45AE8A4AB5A43E2 /* PurchasesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesView.swift; sourceTree = "<group>"; };
 		6E76E41E372733890CD115CA /* Rekvizit-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Rekvizit-macOS.entitlements"; sourceTree = "<group>"; };
@@ -186,6 +188,7 @@
 			children = (
 				9CA499E1215E97F7FD9BA94B /* AutosaveTests.swift */,
 				3AA76EC08A7695FFE5F6EC58 /* CoreTests.swift */,
+				625F80D7C812F68B3834C31D /* ExportFormattingTests.swift */,
 				F6AB88965EC6B2629D07C5D7 /* ExportNamesTests.swift */,
 				EA55F0BD711B004880BFD280 /* NumberingTests.swift */,
 				5370E0C936B57843F4C713FC /* OCRQualityTests.swift */,
@@ -408,6 +411,7 @@
 			files = (
 				3A23670DE0CAFE8BD90CA1F3 /* AutosaveTests.swift in Sources */,
 				2EB8FF75B68E99C19904C25D /* CoreTests.swift in Sources */,
+				A3959C5D780549D27AE2E934 /* ExportFormattingTests.swift in Sources */,
 				ECEE19689CAE7A7F76BA506F /* ExportNamesTests.swift in Sources */,
 				0D17AA8D137A39F0DE82FBC6 /* NumberingTests.swift in Sources */,
 				E6184A2123AA1627CEAC51C5 /* OCRQualityTests.swift in Sources */,
