@@ -28,8 +28,9 @@ final class PersistenceController: ObservableObject {
         #endif
     }
 
-    init(inMemory: Bool = false) {
-        let useCloud = !inMemory && Self.shouldUseCloud()
+    /// `storeURL` — отдельный файл базы (для тестов перезапуска приложения); iCloud в этом случае не используется.
+    init(inMemory: Bool = false, storeURL: URL? = nil) {
+        let useCloud = !inMemory && storeURL == nil && Self.shouldUseCloud()
         cloudRequested = useCloud
         if useCloud {
             container = NSPersistentCloudKitContainer(name: "Rekvizit", managedObjectModel: ModelBuilder.model)
@@ -40,6 +41,7 @@ final class PersistenceController: ObservableObject {
 
         let description = container.persistentStoreDescriptions.first!
         if inMemory { description.url = URL(fileURLWithPath: "/dev/null") }
+        if let storeURL = storeURL { description.url = storeURL }
         description.shouldMigrateStoreAutomatically = true
         description.shouldInferMappingModelAutomatically = true
         description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
@@ -63,7 +65,7 @@ final class PersistenceController: ObservableObject {
 
         observe()
         scheduleMaintenance(after: 0.5)
-        if !inMemory { runLaunchCleanup() }
+        if !inMemory && storeURL == nil { runLaunchCleanup() }
     }
 
     /// Разовая уборка при запуске: старые «черновики» становятся обычными записями (перед этим делается резервная копия),
