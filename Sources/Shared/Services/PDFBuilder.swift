@@ -20,10 +20,18 @@ final class PDFBuilder {
     private let gray = CGColor(red: 0.42, green: 0.45, blue: 0.50, alpha: 1)
     private let headerFill = CGColor(red: 0.23, green: 0.25, blue: 0.28, alpha: 1)
     private let lightFill = CGColor(red: 0.95, green: 0.95, blue: 0.96, alpha: 1)
+    /// Чередование строк таблиц: нечётные — белые #FFFFFF, чётные — светло-серые #F2F3F5; итог — #E9EAED.
+    private let rowOddFill = CGColor(red: 1, green: 1, blue: 1, alpha: 1)
+    private let rowEvenFill = CGColor(red: 242.0 / 255, green: 243.0 / 255, blue: 245.0 / 255, alpha: 1)
+    private let totalFill = CGColor(red: 233.0 / 255, green: 234.0 / 255, blue: 237.0 / 255, alpha: 1)
     private let line = CGColor(red: 0.82, green: 0.83, blue: 0.85, alpha: 1)
     private let red = CGColor(red: 0.75, green: 0.22, blue: 0.17, alpha: 1)
 
     init(snapshot: ReportSnapshot) { self.snapshot = snapshot }
+
+    /// Для тестов: журнал нарисованных строк таблиц (страница, таблица, номер строки, вид заливки). В работе приложения всегда nil.
+    struct RowTrace { enum Kind { case odd, even, total }; let page: Int; let table: String; let index: Int; let kind: Kind }
+    nonisolated(unsafe) static var rowTrace: [RowTrace]?
 
     /// Два прохода: первый считает число страниц (для «стр. X из Y»), второй рисует документ.
     static func build(_ s: ReportSnapshot) -> Data {
@@ -188,8 +196,15 @@ final class PDFBuilder {
             hLine(top: y + h, x1: margin, x2: pageW - margin)
             y += h
         }
-        for r in rows { drawRow(r, bold: false, fill: nil) }
-        if let t = totalRow { drawRow(t, bold: true, fill: lightFill) }
+        // счётчик строк общий для всей таблицы: на новой странице чередование продолжается, а не начинается заново
+        for (i, r) in rows.enumerated() {
+            drawRow(r, bold: false, fill: i % 2 == 0 ? rowOddFill : rowEvenFill)
+            if !dry { Self.rowTrace?.append(.init(page: pageNo, table: title, index: i, kind: i % 2 == 0 ? .odd : .even)) }
+        }
+        if let t = totalRow {
+            drawRow(t, bold: true, fill: totalFill)
+            if !dry { Self.rowTrace?.append(.init(page: pageNo, table: title, index: rows.count, kind: .total)) }
+        }
     }
 
     // MARK: Разделы выписки
