@@ -319,9 +319,9 @@ enum XLSXBuilder {
     // MARK: - Лист 3. Реестр чеков
 
     private static func buildRegistry(_ sh: Sheet, _ s: ReportSnapshot) {
-        sh.widths = [10, 12, 34, 16, 11, 20, 12]
-        sh.text(1, 1, "РЕЕСТР ЧЕКОВ — \(s.projectName)", S.title); sh.merge(1, 1, 1, 7); sh.height(1, 28)
-        let headers = ["№ чека", "Дата", "Магазин", "Сумма чека", "Позиций", "Оригинал чека", "Фото, шт."]
+        sh.widths = [10, 12, 30, 44, 16, 11, 20, 12]
+        sh.text(1, 1, "РЕЕСТР ЧЕКОВ — \(s.projectName)", S.title); sh.merge(1, 1, 1, 8); sh.height(1, 28)
+        let headers = ["№ чека", "Дата", "Магазин", "Наименование покупки", "Сумма чека", "Позиций", "Оригинал чека", "Фото, шт."]
         for (i, h) in headers.enumerated() { sh.text(3, i + 1, h, S.header) }
         sh.height(3, 28)
         sh.freezeAfterRow = 3
@@ -330,18 +330,20 @@ enum XLSXBuilder {
             sh.number(r, 1, Double(rec.number), S.int)
             sh.number(r, 2, serial(rec.date), S.date)
             sh.text(r, 3, rec.store.isEmpty ? "—" : rec.store, S.text)
-            sh.number(r, 4, Money.double(rec.total), S.money)
-            sh.number(r, 5, Double(rec.items.count), S.int)
-            sh.text(r, 6, rec.noReceipt ? "Без чека" : (rec.photos.isEmpty ? "Нет" : "Да"), S.center)
-            sh.number(r, 7, Double(rec.photos.count), S.int)
-            sh.height(r, 22)
+            let nameText = ReceiptCaption.nameList(rec)
+            sh.text(r, 4, nameText.isEmpty ? "—" : nameText, S.text)
+            sh.number(r, 5, Money.double(rec.total), S.money)      // общая сумма чека, один раз
+            sh.number(r, 6, Double(rec.items.count), S.int)
+            sh.text(r, 7, rec.noReceipt ? "Без чека" : (rec.photos.isEmpty ? "Нет" : "Да"), S.center)
+            sh.number(r, 8, Double(rec.photos.count), S.int)
+            sh.height(r, max(22, Double(lineCount(nameText, width: 42)) * 16.0 + 6))
             r += 1
         }
-        for c in 1...7 { sh.blank(r, c, S.totalText) }
-        sh.text(r, 1, "ИТОГО", S.totalText); sh.merge(r, 1, r, 3)
+        for c in 1...8 { sh.blank(r, c, S.totalText) }
+        sh.text(r, 1, "ИТОГО", S.totalText); sh.merge(r, 1, r, 4)
         if r > 4 {
-            sh.formula(r, 4, "SUM(D4:D\(r - 1))", cached: Money.double(s.spent), S.totalMoney)
-            sh.formula(r, 5, "SUM(E4:E\(r - 1))", cached: Double(s.purchaseCount), S.int)
+            sh.formula(r, 5, "SUM(E4:E\(r - 1))", cached: Money.double(s.spent), S.totalMoney)
+            sh.formula(r, 6, "SUM(F4:F\(r - 1))", cached: Double(s.purchaseCount), S.int)
         }
         sh.height(r, 24)
     }
@@ -363,11 +365,14 @@ enum XLSXBuilder {
                 pics.append(Picture(mediaIndex: media.count, col0: 1, row0: r - 1, colOff: 4 * 9525, rowOff: 4 * 9525,
                                     cx: Int(w * 9525), cy: Int(h * 9525), name: "Чек №\(rec.number), фото \(i + 1)"))
                 r += 1
-                var caption = "Чек №\(String(format: "%03d", rec.number))  ·  \(Fmt.date.string(from: rec.date))  ·  \(rec.store.isEmpty ? "магазин не указан" : rec.store)  ·  \(Money.format(rec.total))"
-                if rec.photos.count > 1 { caption += "  ·  фото \(i + 1) из \(rec.photos.count)" }
-                sh.text(r, 2, caption, S.label)
-                sh.height(r, 22)
-                r += 2
+                for line in ReceiptCaption.lines(rec, photoIndex: i, photoCount: rec.photos.count) {
+                    for part in ReceiptCaption.wrap(line, width: 95) {
+                        sh.text(r, 2, part, S.label)
+                        sh.height(r, 20)
+                        r += 1
+                    }
+                }
+                r += 1
             }
         }
         if pics.isEmpty { sh.text(3, 2, "В отчёте нет прикреплённых фотографий чеков.", S.normal) }
