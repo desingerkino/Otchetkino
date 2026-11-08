@@ -266,6 +266,9 @@ enum AddFlow {
     static func createManual(project: RProject, ctx: NSManagedObjectContext) -> RReceipt {
         let r = DataOps.createReceipt(ctx, project: project, photos: [], noReceipt: true)
         DataOps.addItem(ctx, to: r)
+        // Постоянные идентификаторы сразу: у только что созданного объекта идентификатор временный и меняется при сохранении.
+        // Выбор строки и правая панель держат этот идентификатор — после сохранения они «теряли» новую позицию и оставались на старой.
+        try? ctx.obtainPermanentIDs(for: Array(ctx.insertedObjects))
         // Пустая форма не пишется в базу до ввода данных: если ничего не введено, при переходе она просто исчезает.
         return r
     }
