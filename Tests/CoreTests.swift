@@ -113,10 +113,7 @@ final class CoreTests: XCTestCase {
         DataOps.addItem(ctx, to: r1, title: "Шнур", amount: 50_000)
         DataOps.addItem(ctx, to: r2, title: "Краска", amount: 30_000)
 
-        // черновики в итоги не входят
-        XCTAssertEqual(project.totals().spent, 0)
-        XCTAssertEqual(project.totals().draftCount, 2)
-        r1.isDraft = false; r2.isDraft = false
+        // отдельного «подтверждения» нет: заполненная покупка сразу учитывается
         var t = project.totals()
         XCTAssertEqual(t.spent, 1_930_000)
         XCTAssertEqual(t.balance, 5_000_000 - 1_930_000)
@@ -133,7 +130,6 @@ final class CoreTests: XCTestCase {
         // перерасход
         let r3 = DataOps.createReceipt(ctx, project: project, photos: [], noReceipt: true)
         DataOps.addItem(ctx, to: r3, title: "Дорогая вещь", amount: 9_000_000)
-        r3.isDraft = false
         XCTAssertTrue(project.totals().isOverspent)
 
         // повторяющиеся номера после синхронизации исправляются
@@ -213,7 +209,6 @@ final class CoreTests: XCTestCase {
         let project = makeProject(a)
         let r = DataOps.createReceipt(a.viewContext, project: project, photos: [Self.makeJPEG(width: 200, height: 300)], noReceipt: false)
         DataOps.addItem(a.viewContext, to: r, title: "Лампа", amount: 123_00)
-        r.isDraft = false
         try a.viewContext.save()
         let url = try await BackupService.create(container: a.container)
         defer { try? FileManager.default.removeItem(at: url) }

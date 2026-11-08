@@ -3,7 +3,8 @@ import CoreGraphics
 import CoreText
 import ImageIO
 
-/// PDF-версия отчёта (A4, альбомная ориентация): сводка, таблица расходов, реестр, фотографии чеков.
+/// PDF-версия отчёта (A4, альбомная ориентация): сводка, 1) выдачи денег, 2) покупки, 3) возвраты, 4) финансовый итог,
+/// реестр чеков и фотографии чеков. Нумерация страниц «стр. X из Y», дата формирования в колонтитуле.
 final class PDFBuilder {
     private let pageW: CGFloat = 842, pageH: CGFloat = 595
     private let margin: CGFloat = 36
@@ -12,6 +13,8 @@ final class PDFBuilder {
     private var y: CGFloat = 0   // от верхнего края страницы
     private var pageNo = 0
     private let snapshot: ReportSnapshot
+    private var totalPages = 0      // известно после пробного прохода
+    private var dry = false         // пробный проход: считаем страницы, не рисуя фотографии
 
     private let ink = CGColor(red: 0.17, green: 0.18, blue: 0.21, alpha: 1)
     private let gray = CGColor(red: 0.42, green: 0.45, blue: 0.50, alpha: 1)
@@ -22,7 +25,15 @@ final class PDFBuilder {
 
     init(snapshot: ReportSnapshot) { self.snapshot = snapshot }
 
-    static func build(_ s: ReportSnapshot) -> Data { PDFBuilder(snapshot: s).render() }
+    /// Два прохода: первый считает число страниц (для «стр. X из Y»), второй рисует документ.
+    static func build(_ s: ReportSnapshot) -> Data {
+        let probe = PDFBuilder(snapshot: s)
+        probe.dry = true
+        _ = probe.render()
+        let real = PDFBuilder(snapshot: s)
+        real.totalPages = probe.pageNo
+        return real.render()
+    }
 
     // MARK: - Текст
 
@@ -78,7 +89,8 @@ final class PDFBuilder {
     }
 
     private func footer() {
-        let s = attributed("Реквизит · \(snapshot.projectName) · стр. \(pageNo)", size: 8, color: gray)
+        let pages = totalPages > 0 ? " из \(totalPages)" : ""
+        let s = attributed("Реквизит · \(snapshot.projectName) · сформирован \(Fmt.dateTime.string(from: snapshot.generatedAt)) · стр. \(pageNo)\(pages)", size: 8, color: gray)
         draw(s, x: margin, top: pageH - 26, width: pageW - margin * 2, height: 12)
     }
 
@@ -91,7 +103,10 @@ final class PDFBuilder {
         ctx = c
         newPage()
         summaryPage()
-        detailTable()
+        issuesSection()
+        purchasesSection()
+        returnsSection()
+        totalsSection()
         registry()
         photoPages()
         footer()
@@ -116,7 +131,7 @@ final class PDFBuilder {
 
         // карточки
         let cards: [(String, String, CGColor?)] = [
-            ("Получено", Money.format(snapshot.issued), nil), ("Потрачено", Money.format(snapshot.spent), nil),
+            ("Выдано", Money.format(snapshot.issued), nil), ("Потрачено", Money.format(snapshot.spent), nil),
             ("Возвращено", Money.format(snapshot.returned), nil),
             (snapshot.balance < 0 ? "Перерасход" : "Остаток", Money.format(snapshot.balance), snapshot.balance < 0 ? red : nil)
         ]
@@ -143,8 +158,11 @@ final class PDFBuilder {
         }
     }
 
-    private func table(title: String, columns: [(String, CGFloat, CTTextAlignment)], rows: [[String]], totalRow: [String]? = nil) {
-        newPage()
+    private func table(title: String, columns: [(String, CGFloat, CTTextAlignment)], rows: [[String]], totalRow: [String]? = nil, startOnNewPage: Bool = true) {
+        if startOnNewPage { newPage() } else {
+            y += 14
+            ensure(90)   // заголовок раздела, шапка и хотя бы одна строка — на одной странице
+        }
         draw(attributed(title, size: 14, bold: true), x: margin, top: y, width: pageW - margin * 2, height: 20); y += 28
         let total = columns.reduce(0) { $0 + $1.1 }
         let scale = (pageW - margin * 2) / total
@@ -174,30 +192,72 @@ final class PDFBuilder {
         if let t = totalRow { drawRow(t, bold: true, fill: lightFill) }
     }
 
-    private func detailTable() {
-        var rows: [[String]] = []
-        var n = 1
-        for rec in snapshot.receipts {
-            for it in rec.items {
-                rows.append(["\(n)", Fmt.date.string(from: rec.date), it.title, it.category, it.scenes, rec.store, Money.format(it.amount), String(format: "%03d", rec.number),
-                             [it.purpose, rec.comment].filter { !$0.isEmpty }.joined(separator: " · ")])
-                n += 1
-            }
+    // MARK: Разделы выписки
+
+    private func issuesSection() {
+        let issues = snapshot.advances.filter { $0.kind == 0 }.sorted { $0.date < $1.date }
+        let rows = issues.enumerated().map { i, a in
+            ["\(i + 1)", Fmt.date.string(from: a.date), Money.format(a.amount), a.note.isEmpty ? "—" : a.note]
         }
-        table(title: "Детализация расходов",
-              columns: [("№", 24, .center), ("Дата", 56, .left), ("Наименование", 170, .left), ("Категория", 90, .left), ("Сцена", 55, .left),
-                        ("Магазин", 100, .left), ("Сумма", 70, .right), ("№ чека", 40, .center), ("Комментарий", 150, .left)],
-              rows: rows, totalRow: ["", "", "ИТОГО", "", "", "", Money.format(snapshot.spent), "", ""])
+        let total = issues.reduce(Int64(0)) { $0 + $1.amount }
+        table(title: "1. Выдача денег",
+              columns: [("№", 30, .center), ("Дата", 80, .left), ("Сумма", 110, .right), ("Назначение", 420, .left)],
+              rows: rows.isEmpty ? [["—", "—", "—", "Выдач за период нет"]] : rows,
+              totalRow: ["", "ИТОГО", Money.format(total), ""], startOnNewPage: false)
+    }
+
+    private func purchasesSection() {
+        var flat: [(rec: ReportSnapshot.Receipt, item: ReportSnapshot.Item)] = []
+        for rec in snapshot.receipts.sorted(by: { ($0.date, $0.number) < ($1.date, $1.number) }) {
+            for it in rec.items { flat.append((rec, it)) }
+        }
+        let rows = flat.map { f in
+            [String(format: "%03d", f.rec.number), Fmt.date.string(from: f.rec.date), f.rec.store.isEmpty ? "—" : f.rec.store,
+             f.item.title.isEmpty ? "—" : f.item.title, f.item.category, f.item.scenes.isEmpty ? "—" : f.item.scenes, Money.format(f.item.amount)]
+        }
+        let total = flat.reduce(Int64(0)) { $0 + $1.item.amount }
+        table(title: "2. Покупки",
+              columns: [("№", 36, .center), ("Дата", 62, .left), ("Магазин", 120, .left), ("Наименование", 210, .left),
+                        ("Категория", 110, .left), ("Сцена", 60, .left), ("Сумма", 80, .right)],
+              rows: rows.isEmpty ? [["—", "—", "—", "Покупок за период нет", "", "", ""]] : rows,
+              totalRow: ["", "", "", "ИТОГО", "", "", Money.format(total)], startOnNewPage: false)
+    }
+
+    private func returnsSection() {
+        let returns = snapshot.advances.filter { $0.kind == 1 }.sorted { $0.date < $1.date }
+        let rows = returns.enumerated().map { i, a in
+            ["\(i + 1)", Fmt.date.string(from: a.date), Money.format(a.amount), a.note.isEmpty ? "—" : a.note]
+        }
+        let total = returns.reduce(Int64(0)) { $0 + $1.amount }
+        table(title: "3. Возвраты",
+              columns: [("№", 30, .center), ("Дата", 80, .left), ("Сумма", 110, .right), ("Комментарий", 420, .left)],
+              rows: rows.isEmpty ? [["—", "—", "—", "Возвратов не было"]] : rows,
+              totalRow: ["", "ИТОГО", Money.format(total), ""], startOnNewPage: false)
+    }
+
+    private func totalsSection() {
+        let balanceTitle = snapshot.balance < 0 ? "Перерасход (потрачено больше, чем выдано)" : "Остаток (выдано − потрачено − возвращено)"
+        let rows: [[String]] = [
+            ["Всего выдано", Money.format(snapshot.issued)],
+            ["Всего потрачено", Money.format(snapshot.spent)],
+            ["Всего возвращено", Money.format(snapshot.returned)],
+            [balanceTitle, Money.format(snapshot.balance)],
+            ["Количество чеков", "\(snapshot.receiptCount)"],
+            ["Количество покупок без чека", "\(snapshot.noReceiptCount)"],
+            ["Количество покупок (позиций)", "\(snapshot.purchaseCount)"]
+        ]
+        table(title: "4. Финансовый итог",
+              columns: [("Показатель", 420, .left), ("Значение", 200, .right)], rows: rows, startOnNewPage: false)
     }
 
     private func registry() {
         let rows = snapshot.receipts.map { r in
-            [String(format: "%03d", r.number), Fmt.date.string(from: r.date), r.store.isEmpty ? "—" : r.store, r.inn.isEmpty ? "—" : r.inn,
+            [String(format: "%03d", r.number), Fmt.date.string(from: r.date), r.store.isEmpty ? "—" : r.store,
              Money.format(r.total), "\(r.items.count)", r.noReceipt ? "Без чека" : (r.photos.isEmpty ? "Нет" : "Да")]
         }
         table(title: "Реестр чеков",
-              columns: [("№ чека", 50, .center), ("Дата", 70, .left), ("Магазин", 220, .left), ("ИНН", 90, .left), ("Сумма", 90, .right), ("Позиций", 60, .center), ("Оригинал", 80, .center)],
-              rows: rows, totalRow: ["", "", "ИТОГО", "", Money.format(snapshot.spent), "\(snapshot.purchaseCount)", ""])
+              columns: [("№ чека", 50, .center), ("Дата", 70, .left), ("Магазин", 280, .left), ("Сумма", 90, .right), ("Позиций", 60, .center), ("Оригинал", 80, .center)],
+              rows: rows, totalRow: ["", "", "ИТОГО", Money.format(snapshot.spent), "\(snapshot.purchaseCount)", ""])
     }
 
     private func photoPages() {
@@ -208,6 +268,7 @@ final class PDFBuilder {
                 if rec.photos.count > 1 { caption += " · фото \(i + 1) из \(rec.photos.count)" }
                 draw(attributed(caption, size: 11, bold: true), x: margin, top: y, width: pageW - margin * 2, height: 16)
                 y += 24
+                if dry { continue }
                 guard let src = CGImageSourceCreateWithData(im.data as CFData, nil), let cg = CGImageSourceCreateImageAtIndex(src, 0, nil) else { continue }
                 let availW = pageW - margin * 2, availH = pageH - y - 44
                 let scale = min(availW / CGFloat(cg.width), availH / CGFloat(cg.height))

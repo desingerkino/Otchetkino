@@ -59,7 +59,6 @@ struct ReceiptRowView: View {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
                     Text(receipt.numberText).font(.headline)
-                    if receipt.isDraft { Text("ЧЕРНОВИК").font(.caption2.weight(.bold)).padding(.horizontal, 6).padding(.vertical, 2).background(Color.rkAccent.opacity(0.18)).foregroundStyle(Color.rkAccent).clipShape(Capsule()) }
                     if receipt.noReceipt { Text("без чека").font(.caption).foregroundStyle(.secondary) }
                 }
                 Text(receipt.storeText).lineLimit(1)

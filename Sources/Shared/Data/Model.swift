@@ -55,7 +55,8 @@ import CoreData
     @NSManaged public var comment: String
     @NSManaged public var rawText: String
     @NSManaged public var noReceipt: Bool
-    /// Черновик: создан, но не подтверждён пользователем. В суммах и отчётах не участвует.
+    /// Устарело (версия 1.x): раньше отмечало неподтверждённый чек. Начиная с 2.0 не используется и всегда false;
+    /// атрибут оставлен, чтобы не менять схему хранилища и синхронизацию iCloud.
     @NSManaged public var isDraft: Bool
     @NSManaged public var createdAt: Date?
     @NSManaged public var updatedAt: Date?
@@ -78,6 +79,15 @@ import CoreData
     @NSManaged public var photos: NSSet?
 }
 
+/// Справочник магазинов. Названия в чеках остаются обычным текстом (store), справочник лишь подсказывает и объединяет написания.
+@objc(RStore) public class RStore: NSManagedObject {
+    @NSManaged public var uuid: UUID?
+    @NSManaged public var name: String
+    @NSManaged public var createdAt: Date?
+    @NSManaged public var lastUsedAt: Date?
+    @NSManaged public var useCount: Int32
+}
+
 @objc(RPhoto) public class RPhoto: NSManagedObject {
     @NSManaged public var uuid: UUID?
     /// Оригинал файла без перекодирования (HEIC/JPEG/PNG как есть).
@@ -96,6 +106,7 @@ extension RScene { public override func awakeFromInsert() { super.awakeFromInser
 extension RCategory { public override func awakeFromInsert() { super.awakeFromInsert(); setPrimitiveValue(UUID(), forKey: "uuid"); setPrimitiveValue(Date(), forKey: "createdAt") } }
 extension RReceipt { public override func awakeFromInsert() { super.awakeFromInsert(); setPrimitiveValue(UUID(), forKey: "uuid"); setPrimitiveValue(Date(), forKey: "createdAt"); setPrimitiveValue(Date(), forKey: "updatedAt"); setPrimitiveValue(Date(), forKey: "date") } }
 extension RPurchase { public override func awakeFromInsert() { super.awakeFromInsert(); setPrimitiveValue(UUID(), forKey: "uuid"); setPrimitiveValue(Date(), forKey: "createdAt") } }
+extension RStore { public override func awakeFromInsert() { super.awakeFromInsert(); setPrimitiveValue(UUID(), forKey: "uuid"); setPrimitiveValue(Date(), forKey: "createdAt"); setPrimitiveValue(Date(), forKey: "lastUsedAt") } }
 extension RPhoto { public override func awakeFromInsert() { super.awakeFromInsert(); setPrimitiveValue(UUID(), forKey: "uuid"); setPrimitiveValue(Date(), forKey: "createdAt") } }
 
 // MARK: - Описание модели
@@ -155,6 +166,7 @@ enum ModelBuilder {
         let receipt = entity("RReceipt", RReceipt.self)
         let purchase = entity("RPurchase", RPurchase.self)
         let photo = entity("RPhoto", RPhoto.self)
+        let store = entity("RStore", RStore.self)
 
         project.properties = [uuid(), str("name"), str("holder"), date("createdAt"), date("startDate"), date("endDate"), bool("isArchived")]
         advance.properties = [uuid(), int16("kind"), int64("amountKop"), date("date"), str("note"), date("createdAt")]
@@ -210,8 +222,10 @@ enum ModelBuilder {
         purchase.properties += [pPho]
         photo.properties += [phoPur]
 
+        store.properties = [uuid(), str("name"), date("createdAt"), date("lastUsedAt"), int32("useCount")]
+
         let m = NSManagedObjectModel()
-        m.entities = [project, advance, scene, category, receipt, purchase, photo]
+        m.entities = [project, advance, scene, category, receipt, purchase, photo, store]
         return m
     }
 }

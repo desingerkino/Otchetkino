@@ -94,7 +94,7 @@ struct PurchasesView: View {
 
     var body: some View {
         let _ = refresher.tick
-        let all = project.confirmedReceipts.flatMap { $0.purchaseList }
+        let all = project.liveReceipts.flatMap { $0.purchaseList }
         let items = all.filter { filter.matches($0) }.sorted {
             ($0.receipt?.number ?? 0, $0.sortOrder) > ($1.receipt?.number ?? 0, $1.sortOrder)
         }

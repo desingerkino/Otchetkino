@@ -54,7 +54,7 @@ enum ReportService {
             }
             var receipts: [ReportSnapshot.Receipt] = []
             var catMap: [String: Int64] = [:]
-            for r in project.confirmedReceipts where inRange(r.date) {
+            for r in project.liveReceipts where inRange(r.date) {
                 let items = r.purchaseList.map { p -> ReportSnapshot.Item in
                     let cat = p.category?.name ?? "Без категории"
                     catMap[cat, default: 0] += p.amountKop

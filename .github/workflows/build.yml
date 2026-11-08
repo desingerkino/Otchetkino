@@ -1,19 +1,23 @@
 name: Сборка и тесты
 on:
   push:
-    branches: [main]
+    branches: ['**']
+  pull_request:
   workflow_dispatch:
 permissions:
   contents: write
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
       - name: Выбрать Xcode
         run: |
           ls /Applications | grep -i xcode || true
-          sudo xcode-select -s /Applications/Xcode_15.4.app || true
+          # предпочитаем Xcode 16.x (на macos-15), иначе 15.4
+          for v in 16.4 16.3 16.2 16.1 16.0 15.4; do
+            if [ -d "/Applications/Xcode_$v.app" ]; then sudo xcode-select -s "/Applications/Xcode_$v.app"; break; fi
+          done
           xcodebuild -version
       - name: Установить XcodeGen
         run: brew install xcodegen
@@ -58,6 +62,10 @@ jobs:
             -derivedDataPath build ONLY_ACTIVE_ARCH=NO ARCHS="arm64 x86_64" CODE_SIGN_IDENTITY="-" CODE_SIGNING_REQUIRED=YES CODE_SIGNING_ALLOWED=YES 2>&1 | tail -5
           cd build/Build/Products/Local && lipo -archs Rekvizit.app/Contents/MacOS/Rekvizit && codesign -dv Rekvizit.app 2>&1 | head -3
           ditto -c -k --keepParent Rekvizit.app "$GITHUB_WORKSPACE/Rekvizit-macOS-local.zip"
+          # DMG: образ с приложением и ссылкой на «Программы»
+          mkdir -p "$RUNNER_TEMP/dmg" && cp -R Rekvizit.app "$RUNNER_TEMP/dmg/" && ln -s /Applications "$RUNNER_TEMP/dmg/Applications"
+          hdiutil create -volname "Реквизит" -srcfolder "$RUNNER_TEMP/dmg" -ov -format UDZO "$GITHUB_WORKSPACE/Rekvizit-macOS.dmg"
+          ls -la "$GITHUB_WORKSPACE/Rekvizit-macOS.dmg"
           # дымовой запуск: приложение должно открыться и не упасть
           ./Rekvizit.app/Contents/MacOS/Rekvizit > "$GITHUB_WORKSPACE/launch.log" 2>&1 &
           APP_PID=$!
@@ -72,21 +80,25 @@ jobs:
           mkdir -p ipa/Payload && cp -R build-ios/Build/Products/Local-iphoneos/Rekvizit.app ipa/Payload/
           (cd ipa && zip -qr "$GITHUB_WORKSPACE/Rekvizit-iOS-unsigned.ipa" Payload)
           ls -la Rekvizit-iOS-unsigned.ipa
+      - name: Собрать файлы для загрузки (без вложенных папок)
+        run: |
+          mkdir -p dist
+          cp Rekvizit-macOS.dmg Rekvizit-macOS-local.zip mac-launch.png launch.log dist/ || true
+          cp /tmp/rekvizit-samples/* dist/ || true
+          ls -la dist
       - uses: actions/upload-artifact@v4
         with:
           name: Rekvizit-macOS-and-samples
-          path: |
-            Rekvizit-macOS-local.zip
-            mac-launch.png
-            launch.log
-            /tmp/rekvizit-samples/*
+          path: dist/*
       - name: Выложить сборку и примеры в релиз
+        if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release view latest >/dev/null 2>&1 || gh release create latest --title "Последняя сборка" --notes "Автоматическая сборка из ветки main. Mac-приложение без подписи Apple (без iCloud) и примеры отчётов."
-          gh release upload latest Rekvizit-iOS-unsigned.ipa Rekvizit-macOS-local.zip /tmp/rekvizit-samples/sample-report.xlsx /tmp/rekvizit-samples/sample-report.pdf --clobber
+          gh release upload latest Rekvizit-iOS-unsigned.ipa Rekvizit-macOS-local.zip Rekvizit-macOS.dmg /tmp/rekvizit-samples/sample-report.xlsx /tmp/rekvizit-samples/sample-report.pdf --clobber
       - name: Сохранить сгенерированный Xcode-проект в репозиторий
+        if: github.event_name == 'push'
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"

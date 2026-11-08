@@ -64,7 +64,7 @@ struct AdvanceSheet: View {
                 Section {
                     AmountField(title: "Сумма, ₽", kop: $amount)
                     DatePicker("Дата", selection: $date, displayedComponents: .date)
-                    TextField("Примечание (необязательно)", text: $note)
+                    TextField("Назначение / комментарий (например, «Реквизит»)", text: $note)
                 } footer: {
                     Text(kind == 0 ? "Дополнительная выдача увеличивает сумму подотчётных средств." : "Возврат неиспользованных денег уменьшает остаток.")
                 }
@@ -80,7 +80,7 @@ struct AdvanceSheet: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Отмена") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Записать") {
-                        DataOps.addAdvance(ctx, project: project, kind: kind, amount: amount, date: date, note: note)
+                        DataOps.addAdvance(ctx, project: project, kind: kind, amount: amount, date: date, note: note.trimmingCharacters(in: .whitespacesAndNewlines))
                         try? ctx.save()
                         dismiss()
                     }
@@ -91,30 +91,6 @@ struct AdvanceSheet: View {
         #if os(macOS)
         .frame(width: 440, height: 330)
         #endif
-    }
-}
-
-/// Поле ввода суммы в рублях: хранит значение в копейках.
-struct AmountField: View {
-    let title: String
-    @Binding var kop: Int64
-    @State private var text = ""
-    @FocusState private var focused: Bool
-
-    var body: some View {
-        TextField(title, text: $text)
-            .focused($focused)
-            #if os(iOS)
-            .keyboardType(.decimalPad)
-            #endif
-            .onAppear { text = Money.editString(kop) }
-            .onChange(of: text) { new in
-                if new.trimmingCharacters(in: .whitespaces).isEmpty { kop = 0 }
-                else if let v = Money.parse(new) { kop = v }
-            }
-            .onChange(of: kop) { new in
-                if !focused { text = Money.editString(new) }
-            }
     }
 }
 

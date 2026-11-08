@@ -21,6 +21,7 @@ struct SettingsView: View {
     @State private var backupMessage: String?
     @State private var showRestore = false
     @State private var newCategory = ""
+    @State private var showStores = false
 
     struct KindBox: Identifiable { let kind: Int16; var id: Int16 { kind } }
 
@@ -36,6 +37,11 @@ struct SettingsView: View {
                 moneySection
                 scenesSection
                 categoriesSection
+                Section {
+                    Button { showStores = true } label: { Label("Справочник магазинов…", systemImage: "storefront") }
+                } header: { Text("Магазины") } footer: {
+                    Text("Магазины запоминаются сами при вводе и предлагаются подсказкой. Здесь их можно переименовать, объединить дубли или убрать лишние — покупки при этом не теряются.")
+                }
                 Section {
                     Button("Перенумеровать чеки по порядку") { confirmRenumber = true }
                 } header: { Text("Нумерация чеков") } footer: {
@@ -54,6 +60,7 @@ struct SettingsView: View {
             .formStyle(.grouped)
             #endif
             .navigationTitle("Настройки")
+            .sheet(isPresented: $showStores) { StoresManagerView() }
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -218,5 +225,68 @@ struct CategoryEditRow: View {
             TextField("Название", text: $category.name)
             Button(role: .destructive) { ctx.delete(category); try? ctx.save() } label: { Image(systemName: "trash") }.buttonStyle(.borderless)
         }
+    }
+}
+
+
+/// Справочник магазинов: просмотр, переименование, объединение дублей, удаление лишних записей.
+struct StoresManagerView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.managedObjectContext) private var ctx
+    @EnvironmentObject private var saver: SaveCoordinator
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \RStore.name, ascending: true)]) private var stores: FetchedResults<RStore>
+    @State private var query = ""
+    @State private var renaming: RStore?
+    @State private var newName = ""
+
+    var body: some View {
+        let counts = StoreDirectory.counts(ctx)
+        let q = StoreDirectory.key(query)
+        let list = stores.filter { q.isEmpty || StoreDirectory.key($0.name).contains(q) }
+        NavigationStack {
+            VStack(spacing: 0) {
+                RKSearchField(text: $query, prompt: "Найти магазин").padding(12)
+                List {
+                    if list.isEmpty { Text(stores.isEmpty ? "Магазинов пока нет — они появятся, когда вы введёте название в покупке." : "Ничего не найдено.").foregroundStyle(.secondary) }
+                    ForEach(list, id: \.objectID) { s in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(s.name).fontWeight(.medium)
+                                Text("чеков: \(counts[StoreDirectory.key(s.name)] ?? 0)").font(.caption).foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Menu {
+                                Button("Переименовать…") { newName = s.name; renaming = s }
+                                Menu("Объединить с…") {
+                                    ForEach(stores.filter { $0 != s }, id: \.objectID) { other in
+                                        Button(other.name) { StoreDirectory.merge(ctx, source: s, into: other); saver.saveNow() }
+                                    }
+                                }
+                                Divider()
+                                Button("Убрать из справочника", role: .destructive) { StoreDirectory.remove(ctx, store: s); saver.saveNow() }
+                            } label: { Image(systemName: "ellipsis.circle") }
+                            .menuStyle(.borderlessButton)
+                            .fixedSize()
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Магазины")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Готово") { saver.saveNow(); dismiss() } } }
+            .alert("Переименовать магазин", isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
+                TextField("Название", text: $newName)
+                Button("Сохранить") {
+                    if let s = renaming { StoreDirectory.rename(ctx, store: s, to: newName); saver.saveNow() }
+                    renaming = nil
+                }
+                Button("Отмена", role: .cancel) { renaming = nil }
+            } message: { Text("Название обновится во всех чеках этого магазина. Если такое уже есть в справочнике, магазины объединятся.") }
+        }
+        #if os(macOS)
+        .frame(width: 460, height: 520)
+        #endif
     }
 }

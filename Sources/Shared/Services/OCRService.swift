@@ -2,17 +2,55 @@ import Foundation
 import CoreGraphics
 import Vision
 import CoreData
+import CoreImage
+import CoreImage.CIFilterBuiltins
+import ImageIO
 
 /// Распознавание текста чека через Apple Vision (работает на устройстве, без интернета).
 enum OCRService {
     private struct Fragment { var yTop: Double; var xLeft: Double; var height: Double; var text: String }
 
+    /// Распознанный текст по строкам (лучший из вариантов обработки фото).
     static func recognizeLines(from data: Data) async -> [String] {
         await Task.detached(priority: .userInitiated) { recognizeSync(data) }.value
     }
 
-    static func recognizeSync(_ data: Data) -> [String] {
-        guard let cg = ImageTools.cgImage(from: data, maxPixel: 9000) else { return [] }
+    /// Строки и разбор чека — для заполнения полей покупки.
+    static func recognizeFull(from data: Data) async -> (lines: [String], parsed: ParsedReceipt) {
+        await Task.detached(priority: .userInitiated) { recognizeBest(data) }.value
+    }
+
+    static func recognizeSync(_ data: Data) -> [String] { recognizeBest(data).lines }
+
+    /// Пробует несколько вариантов: исходное фото, улучшенное (выравнивание по документу, контраст, шум),
+    /// повёрнутое на 90° — и выбирает тот, где разбор чека получился наиболее уверенным.
+    static func recognizeBest(_ data: Data) -> (lines: [String], parsed: ParsedReceipt) {
+        guard let original = ImageTools.cgImage(from: data, maxPixel: 9000) else { return ([], ParsedReceipt()) }
+        var best: (lines: [String], parsed: ParsedReceipt, score: Double)?
+        func consider(_ image: CGImage) {
+            let lines = recognizeLines(in: image)
+            let parsed = ReceiptParser.parse(lines: lines)
+            let score = parsed.score + Double(min(lines.count, 40)) * 0.02
+            if best == nil || score > best!.score { best = (lines, parsed, score) }
+        }
+        func isGood() -> Bool { (best?.parsed.dateConfident ?? false) && (best?.parsed.totalConfident ?? false) }
+
+        consider(original)
+        if !isGood() {
+            let medium = ImageTools.cgImage(from: data, maxPixel: 4500) ?? original
+            if let enhanced = ReceiptImagePrep.enhanced(medium) { consider(enhanced) }
+            if !isGood() {
+                // фото могли снять боком
+                for orientation in [CGImagePropertyOrientation.right, .left] where !isGood() {
+                    if let turned = ReceiptImagePrep.rotated(medium, orientation) { consider(turned) }
+                }
+            }
+        }
+        return (best?.lines ?? [], best?.parsed ?? ParsedReceipt())
+    }
+
+    /// Текст одной картинки: длинные чеки режутся на перекрывающиеся полосы.
+    static func recognizeLines(in cg: CGImage) -> [String] {
         let w = cg.width, h = cg.height
         var fragments: [Fragment] = []
 
@@ -76,50 +114,134 @@ enum OCRService {
     }
 }
 
-/// Запускает распознавание для чека и аккуратно заполняет черновик. Ничего не проводит без подтверждения пользователя.
+/// Запускает распознавание для чека и заполняет поля покупки. Ничего не придумывает: что распознано неуверенно —
+/// помечается для проверки (`review`). Изменения сохраняются автоматически вместе с остальными.
 @MainActor
 final class OCRCoordinator: ObservableObject {
     static let shared = OCRCoordinator()
     @Published private(set) var running: Set<NSManagedObjectID> = []
     @Published private(set) var failed: Set<NSManagedObjectID> = []
+    /// Поля, которые распознавание определило неуверенно: «дата», «сумма», «магазин».
+    @Published private(set) var review: [NSManagedObjectID: [String]] = [:]
 
-    func recognize(_ receipt: RReceipt) {
+    func recognize(_ receipt: RReceipt, force: Bool = false) {
         guard let photo = receipt.photoList.first, let data = photo.data else { return }
         let id = receipt.objectID
         guard !running.contains(id) else { return }
         running.insert(id)
         failed.remove(id)
+        review[id] = nil
         Task { [weak receipt] in
-            let lines = await OCRService.recognizeLines(from: data)
-            let parsed = ReceiptParser.parse(lines: lines)
+            let result = await OCRService.recognizeFull(from: data)
             self.running.remove(id)
             guard let receipt = receipt, !receipt.isDeleted, let ctx = receipt.managedObjectContext else { return }
-            if parsed.isEmpty && lines.isEmpty {
+            if result.parsed.isEmpty && result.lines.isEmpty {
                 self.failed.insert(id)
             } else {
-                Self.apply(parsed, lines: lines, to: receipt, ctx: ctx)
-                if parsed.totalKop == nil && parsed.items.isEmpty { self.failed.insert(id) }
+                Self.apply(result.parsed, lines: result.lines, to: receipt, ctx: ctx, overwrite: force)
+                if result.parsed.totalKop == nil && result.parsed.items.isEmpty { self.failed.insert(id) }
+                let fields = result.parsed.reviewFields
+                if !fields.isEmpty { self.review[id] = fields }
             }
         }
     }
 
-    static func apply(_ parsed: ParsedReceipt, lines: [String], to r: RReceipt, ctx: NSManagedObjectContext) {
+    /// Заполняет покупку из разбора. Уже введённое вручную не затирается (кроме явного «Распознать заново» для пустых позиций).
+    static func apply(_ parsed: ParsedReceipt, lines: [String], to r: RReceipt, ctx: NSManagedObjectContext, overwrite: Bool = false) {
+        let firstRun = r.rawText.isEmpty
         r.rawText = lines.joined(separator: "\n")
-        if let d = parsed.date { r.date = d }
+        if let d = parsed.date, firstRun || overwrite { r.date = d }
         if r.store.isEmpty, let s = parsed.store { r.store = s }
-        if r.inn.isEmpty, let i = parsed.inn { r.inn = i }
-        if r.purchaseList.isEmpty {
+        // позиции: заполняем, только если пользователь их ещё не вводил (пустые позиции заменяются)
+        let replaceable = r.purchaseList.allSatisfy { $0.isBlank || ($0.title == "Покупка" && $0.purpose.isEmpty && overwrite) }
+        if replaceable {
+            var newItems: [(title: String, amount: Int64, quantity: Double)] = []
             if parsed.itemsConsistent {
-                for it in parsed.items {
-                    let p = DataOps.addItem(ctx, to: r, title: it.title, amount: it.sumKop)
-                    p.quantity = it.quantity
-                }
+                newItems = parsed.items.map { ($0.title, $0.sumKop, $0.quantity) }
             } else if let total = parsed.totalKop {
                 let title = parsed.items.count == 1 ? parsed.items[0].title : "Покупка"
-                DataOps.addItem(ctx, to: r, title: title, amount: total)
+                newItems = [(title, total, 1)]
+            }
+            if !newItems.isEmpty {
+                for old in r.purchaseList { ctx.delete(old) }
+                for it in newItems {
+                    let p = DataOps.addItem(ctx, to: r, title: it.title, amount: it.amount)
+                    p.quantity = it.quantity
+                }
             }
         }
         r.touch()
-        try? ctx.save()
+    }
+}
+
+// MARK: - Предобработка фото чека
+
+/// Улучшение фото перед распознаванием: выравнивание по границам документа, контраст, подавление шума, чёткость.
+enum ReceiptImagePrep {
+    private static let context = CIContext()
+
+    static func rotated(_ cg: CGImage, _ orientation: CGImagePropertyOrientation) -> CGImage? {
+        let ci = CIImage(cgImage: cg).oriented(orientation)
+        return context.createCGImage(ci, from: ci.extent)
+    }
+
+    static func enhanced(_ cg: CGImage) -> CGImage? {
+        var image = CIImage(cgImage: cg)
+        if let flat = flattenDocument(cg, image) { image = flat }
+
+        // выравнивание освещения: поднять тени и приглушить блики
+        let light = CIFilter.highlightShadowAdjust()
+        light.inputImage = image
+        light.shadowAmount = 0.7
+        light.highlightAmount = 0.9
+        image = light.outputImage ?? image
+
+        // чёрно-белый контрастный вариант
+        let controls = CIFilter.colorControls()
+        controls.inputImage = image
+        controls.saturation = 0
+        controls.contrast = 1.35
+        controls.brightness = 0.03
+        image = controls.outputImage ?? image
+
+        let denoise = CIFilter.noiseReduction()
+        denoise.inputImage = image
+        denoise.noiseLevel = 0.02
+        denoise.sharpness = 0.5
+        image = denoise.outputImage ?? image
+
+        let sharpen = CIFilter.unsharpMask()
+        sharpen.inputImage = image
+        sharpen.radius = 2.0
+        sharpen.intensity = 0.7
+        image = sharpen.outputImage ?? image
+
+        return context.createCGImage(image, from: image.extent)
+    }
+
+    /// Находит лист чека на фото и «выпрямляет» его (коррекция перспективы + обрезка). Если лист не найден надёжно — не трогает.
+    private static func flattenDocument(_ cg: CGImage, _ image: CIImage) -> CIImage? {
+        let request = VNDetectDocumentSegmentationRequest()
+        let handler = VNImageRequestHandler(cgImage: cg, options: [:])
+        guard (try? handler.perform([request])) != nil, let obs = request.results?.first, obs.confidence > 0.6 else { return nil }
+        let w = CGFloat(cg.width), h = CGFloat(cg.height)
+        func point(_ n: CGPoint) -> CGPoint { CGPoint(x: n.x * w, y: n.y * h) }
+        let tl = point(obs.topLeft), tr = point(obs.topRight), br = point(obs.bottomRight), bl = point(obs.bottomLeft)
+        // площадь четырёхугольника (формула Гаусса) — лист должен занимать заметную часть кадра
+        let pts = [tl, tr, br, bl]
+        var area: CGFloat = 0
+        for i in 0..<pts.count {
+            let a = pts[i], b = pts[(i + 1) % pts.count]
+            area += a.x * b.y - b.x * a.y
+        }
+        area = abs(area) / 2
+        guard area > 0.25 * w * h else { return nil }
+        let filter = CIFilter.perspectiveCorrection()
+        filter.inputImage = image
+        filter.topLeft = tl
+        filter.topRight = tr
+        filter.bottomRight = br
+        filter.bottomLeft = bl
+        return filter.outputImage
     }
 }
