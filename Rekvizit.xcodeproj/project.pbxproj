@@ -65,6 +65,7 @@
 		E1DD667B561927DA9787A61A /* SaveCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF7D8033B2EE78E27197F377 /* SaveCoordinator.swift */; };
 		E34B386F4657D0C80CB99246 /* OCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24D6D833984D67E3800BA70C /* OCRService.swift */; };
 		E4A1F4CC82A7ADBBA1F3A3EE /* OCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24D6D833984D67E3800BA70C /* OCRService.swift */; };
+		E6184A2123AA1627CEAC51C5 /* OCRQualityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5370E0C936B57843F4C713FC /* OCRQualityTests.swift */; };
 		E96C580592578A3640B4DBEA /* Fields.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EC4BA7538C64FDA2BEBE0A5 /* Fields.swift */; };
 		EC0AA52EC03090979D17ED9F /* SaveCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF7D8033B2EE78E27197F377 /* SaveCoordinator.swift */; };
 		EEA51774D6135BF60FF7B645 /* PDFBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CF207614402AAB2019BCA06 /* PDFBuilder.swift */; };
@@ -98,6 +99,7 @@
 		3AA76EC08A7695FFE5F6EC58 /* CoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreTests.swift; sourceTree = "<group>"; };
 		46614C81F0566FD5B8AB5023 /* RekvizitApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RekvizitApp.swift; sourceTree = "<group>"; };
 		4C2D575C2447E55E1340924B /* Money.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Money.swift; sourceTree = "<group>"; };
+		5370E0C936B57843F4C713FC /* OCRQualityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRQualityTests.swift; sourceTree = "<group>"; };
 		60AD02CBE7BA5D2EEC15E954 /* ProjectSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectSheets.swift; sourceTree = "<group>"; };
 		633D5A87D481FD302CA63E1E /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		6C52326FF45AE8A4AB5A43E2 /* PurchasesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesView.swift; sourceTree = "<group>"; };
@@ -174,6 +176,7 @@
 			children = (
 				9CA499E1215E97F7FD9BA94B /* AutosaveTests.swift */,
 				3AA76EC08A7695FFE5F6EC58 /* CoreTests.swift */,
+				5370E0C936B57843F4C713FC /* OCRQualityTests.swift */,
 				18F04FDF8651311E9A9F41AF /* ParserTests.swift */,
 			);
 			path = Tests;
@@ -391,6 +394,7 @@
 			files = (
 				3A23670DE0CAFE8BD90CA1F3 /* AutosaveTests.swift in Sources */,
 				2EB8FF75B68E99C19904C25D /* CoreTests.swift in Sources */,
+				E6184A2123AA1627CEAC51C5 /* OCRQualityTests.swift in Sources */,
 				C2A628DFC243FC12A4AD7881 /* ParserTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
