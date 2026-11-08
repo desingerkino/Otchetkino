@@ -4,8 +4,8 @@ import Foundation
 /// Наименования берутся из товарных позиций чека; пустые не выводятся, ничего не выдумывается, сумма — общая по чеку.
 enum ReceiptCaption {
     /// До скольких наименований перечисляем полностью; если позиций больше — первые несколько и «и ещё N позиций».
-    static let fullListLimit = 5
-    static let shownWhenTruncated = 4
+    static let fullListLimit = 3
+    static let shownWhenTruncated = 3
 
     static func names(_ rec: ReportSnapshot.Receipt) -> [String] {
         rec.items.map { $0.title.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }

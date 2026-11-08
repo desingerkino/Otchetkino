@@ -8,6 +8,22 @@ enum XLSXBuilder {
         static let normal = 0, title = 1, header = 2, text = 3, money = 4, date = 5, label = 6, moneyBold = 7, center = 8
         static let totalText = 9, totalMoney = 10, int = 11, subtitle = 12, moneyPlain = 13, overspend = 14, plainWrap = 15
         static let sectionHeader = 16, dateBordered = 5
+        // строки таблиц с чередованием: нечётная (1-я, 3-я…) — белая #FFFFFF, чётная — светло-серая #F2F3F5
+        static let textOdd = 17, textEven = 18, moneyOdd = 19, moneyEven = 20, dateOdd = 21, dateEven = 22
+        static let centerOdd = 23, centerEven = 24, intOdd = 25, intEven = 26
+    }
+
+    /// Стиль строки таблицы с чередованием цветов. `index` — порядковый номер строки данных с нуля (шапка и итог в счёте не участвуют).
+    private static func zebra(_ base: Int, _ index: Int) -> Int {
+        let odd = index % 2 == 0
+        switch base {
+        case S.text: return odd ? S.textOdd : S.textEven
+        case S.money: return odd ? S.moneyOdd : S.moneyEven
+        case S.date: return odd ? S.dateOdd : S.dateEven
+        case S.center: return odd ? S.centerOdd : S.centerEven
+        case S.int: return odd ? S.intOdd : S.intEven
+        default: return base
+        }
     }
 
     // MARK: - Вспомогательные типы
@@ -220,7 +236,7 @@ enum XLSXBuilder {
         if !s.categories.isEmpty {
             sh.text(r, 1, "РАСХОДЫ ПО КАТЕГОРИЯМ", S.sectionHeader); sh.blank(r, 2, S.sectionHeader); r += 1
             let first = r
-            for c in s.categories { sh.text(r, 1, c.name, S.text); sh.number(r, 2, Money.double(c.amount), S.money); r += 1 }
+            for (i, c) in s.categories.enumerated() { sh.text(r, 1, c.name, zebra(S.text, i)); sh.number(r, 2, Money.double(c.amount), zebra(S.money, i)); r += 1 }
             sh.text(r, 1, "Итого", S.totalText)
             sh.formula(r, 2, "SUM(B\(first):B\(r - 1))", cached: Money.double(s.categories.reduce(0) { $0 + $1.amount }), S.totalMoney)
             r += 2
@@ -231,11 +247,11 @@ enum XLSXBuilder {
             r += 1
             for (i, h) in ["Дата", "Операция", "Сумма", "Примечание"].enumerated() { sh.text(r, i + 1, h, S.header) }
             r += 1
-            for a in s.advances {
-                sh.number(r, 1, serial(a.date), S.date)
-                sh.text(r, 2, a.kind == 0 ? "Выдача" : "Возврат", S.text)
-                sh.number(r, 3, Money.double(a.amount), S.money)
-                sh.text(r, 4, a.note, S.text)
+            for (i, a) in s.advances.enumerated() {
+                sh.number(r, 1, serial(a.date), zebra(S.date, i))
+                sh.text(r, 2, a.kind == 0 ? "Выдача" : "Возврат", zebra(S.text, i))
+                sh.number(r, 3, Money.double(a.amount), zebra(S.money, i))
+                sh.text(r, 4, a.note, zebra(S.text, i))
                 r += 1
             }
             r += 1
@@ -274,16 +290,17 @@ enum XLSXBuilder {
             let photoHeightPt = boxH * 0.75 + 8
             let items = rec.items.isEmpty ? [ReportSnapshot.Item(title: "(без позиций)", category: "—", scenes: "", amount: 0, quantity: 1, purpose: "")] : rec.items
             for it in items {
-                sh.number(r, 1, Double(n), S.int)
-                sh.number(r, 2, serial(rec.date), S.date)
-                sh.text(r, 3, it.quantity != 1 && it.quantity > 0 ? "\(it.title) (× \(trimQty(it.quantity)))" : it.title, S.text)
-                sh.text(r, 4, it.category, S.text)
-                sh.text(r, 5, it.scenes, S.text)
-                sh.text(r, 6, rec.store, S.text)
-                sh.number(r, 7, Money.double(it.amount), S.money)
-                sh.number(r, 8, Double(rec.number), S.int)
+                let z = n - 1      // порядковый номер строки данных: чередование не сбрасывается ни на дате, ни на новом чеке
+                sh.number(r, 1, Double(n), zebra(S.int, z))
+                sh.number(r, 2, serial(rec.date), zebra(S.date, z))
+                sh.text(r, 3, it.quantity != 1 && it.quantity > 0 ? "\(it.title) (× \(trimQty(it.quantity)))" : it.title, zebra(S.text, z))
+                sh.text(r, 4, it.category, zebra(S.text, z))
+                sh.text(r, 5, it.scenes, zebra(S.text, z))
+                sh.text(r, 6, rec.store, zebra(S.text, z))
+                sh.number(r, 7, Money.double(it.amount), zebra(S.money, z))
+                sh.number(r, 8, Double(rec.number), zebra(S.int, z))
                 let comment = [it.purpose, rec.comment].filter { !$0.isEmpty }.joined(separator: "\n")
-                sh.text(r, 10, comment, S.text)
+                sh.text(r, 10, comment, zebra(S.text, z))
                 let lines = max(lineCount(it.title, width: 34), lineCount(comment, width: 40), lineCount(rec.store, width: 22), lineCount(it.category, width: 18))
                 let textH = max(32.0, Double(lines) * 16.0 + 6)
                 let photoShare = img != nil ? ceil(photoHeightPt / Double(items.count)) : 0
@@ -292,7 +309,7 @@ enum XLSXBuilder {
                 r += 1
             }
             // колонка «Фото чека»
-            for rr in startRow..<r { sh.blank(rr, 9, S.center) }
+            for rr in startRow..<r { sh.blank(rr, 9, zebra(S.center, firstDataIndex(startRow, firstDataRow))) }
             if let im = img {
                 if r - 1 > startRow { sh.merge(startRow, 9, r - 1, 9) }
                 media.append(im.data)
@@ -300,7 +317,7 @@ enum XLSXBuilder {
                                     colOff: Int(((detailPhotoBoxW - boxW) / 2 + 4) * 9525), rowOff: 4 * 9525,
                                     cx: Int(boxW * 9525), cy: Int(boxH * 9525), name: "Чек №\(rec.number)"))
             } else {
-                sh.text(startRow, 9, rec.noReceipt ? "Без чека" : "Фото нет", S.center)
+                sh.text(startRow, 9, rec.noReceipt ? "Без чека" : "Фото нет", zebra(S.center, firstDataIndex(startRow, firstDataRow)))
                 if r - startRow > 1 { sh.merge(startRow, 9, r - 1, 9) }
             }
         }
@@ -316,6 +333,8 @@ enum XLSXBuilder {
         sh.height(totalRow, 26)
     }
 
+    private static func firstDataIndex(_ row: Int, _ firstDataRow: Int) -> Int { row - firstDataRow }
+
     // MARK: - Лист 3. Реестр чеков
 
     private static func buildRegistry(_ sh: Sheet, _ s: ReportSnapshot) {
@@ -327,15 +346,16 @@ enum XLSXBuilder {
         sh.freezeAfterRow = 3
         var r = 4
         for rec in s.receipts {
-            sh.number(r, 1, Double(rec.number), S.int)
-            sh.number(r, 2, serial(rec.date), S.date)
-            sh.text(r, 3, rec.store.isEmpty ? "—" : rec.store, S.text)
+            let z = r - 4
+            sh.number(r, 1, Double(rec.number), zebra(S.int, z))
+            sh.number(r, 2, serial(rec.date), zebra(S.date, z))
+            sh.text(r, 3, rec.store.isEmpty ? "—" : rec.store, zebra(S.text, z))
             let nameText = ReceiptCaption.nameList(rec)
-            sh.text(r, 4, nameText.isEmpty ? "—" : nameText, S.text)
-            sh.number(r, 5, Money.double(rec.total), S.money)      // общая сумма чека, один раз
-            sh.number(r, 6, Double(rec.items.count), S.int)
-            sh.text(r, 7, rec.noReceipt ? "Без чека" : (rec.photos.isEmpty ? "Нет" : "Да"), S.center)
-            sh.number(r, 8, Double(rec.photos.count), S.int)
+            sh.text(r, 4, nameText.isEmpty ? "—" : nameText, zebra(S.text, z))
+            sh.number(r, 5, Money.double(rec.total), zebra(S.money, z))      // общая сумма чека, один раз
+            sh.number(r, 6, Double(rec.items.count), zebra(S.int, z))
+            sh.text(r, 7, rec.noReceipt ? "Без чека" : (rec.photos.isEmpty ? "Нет" : "Да"), zebra(S.center, z))
+            sh.number(r, 8, Double(rec.photos.count), zebra(S.int, z))
             sh.height(r, max(22, Double(lineCount(nameText, width: 42)) * 16.0 + 6))
             r += 1
         }
@@ -442,7 +462,17 @@ enum XLSXBuilder {
             xf(164, h: "right"),                                          // 13 money plain
             xf(164, font: 5, fill: 3, border: 1, h: "right"),             // 14 overspend
             xf(wrap: true),                                               // 15 plain wrap
-            xf(font: 3, fill: 2, border: 1)                               // 16 section header
+            xf(font: 3, fill: 2, border: 1),                              // 16 section header
+            xf(border: 1, fill: 4, wrap: true),                           // 17 text, белая
+            xf(border: 1, fill: 5, wrap: true),                           // 18 text, серая
+            xf(164, border: 1, fill: 4, h: "right"),                      // 19 money, белая
+            xf(164, border: 1, fill: 5, h: "right"),                      // 20 money, серая
+            xf(165, border: 1, fill: 4, h: "center"),                     // 21 date, белая
+            xf(165, border: 1, fill: 5, h: "center"),                     // 22 date, серая
+            xf(border: 1, fill: 4, h: "center", wrap: true),              // 23 center, белая
+            xf(border: 1, fill: 5, h: "center", wrap: true),              // 24 center, серая
+            xf(1, border: 1, fill: 4, h: "center"),                       // 25 int, белая
+            xf(1, border: 1, fill: 5, h: "center")                        // 26 int, серая
         ]
         var x = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">"
         x += "<numFmts count=\"2\"><numFmt numFmtId=\"164\" formatCode=\"#,##0.00&quot; ₽&quot;\"/><numFmt numFmtId=\"165\" formatCode=\"dd\\.mm\\.yyyy\"/></numFmts>"
@@ -454,9 +484,10 @@ enum XLSXBuilder {
         x += "<font><sz val=\"10\"/><color rgb=\"FF6B7280\"/><name val=\"Calibri\"/><family val=\"2\"/></font>"
         x += "<font><b/><sz val=\"11\"/><color rgb=\"FFC0392B\"/><name val=\"Calibri\"/><family val=\"2\"/></font>"
         x += "</fonts>"
-        x += "<fills count=\"4\"><fill><patternFill patternType=\"none\"/></fill><fill><patternFill patternType=\"gray125\"/></fill>"
+        x += "<fills count=\"6\"><fill><patternFill patternType=\"none\"/></fill><fill><patternFill patternType=\"gray125\"/></fill>"
         x += "<fill><patternFill patternType=\"solid\"><fgColor rgb=\"FF3A3F47\"/><bgColor indexed=\"64\"/></patternFill></fill>"
-        x += "<fill><patternFill patternType=\"solid\"><fgColor rgb=\"FFF1F2F4\"/><bgColor indexed=\"64\"/></patternFill></fill></fills>"
+        x += "<fill><patternFill patternType=\"solid\"><fgColor rgb=\"FFE9EAED\"/><bgColor indexed=\"64\"/></patternFill></fill>"
+        x += "<fill><patternFill patternType=\"solid\"><fgColor rgb=\"FFFFFFFF\"/><bgColor indexed=\"64\"/></patternFill></fill><fill><patternFill patternType=\"solid\"><fgColor rgb=\"FFF2F3F5\"/><bgColor indexed=\"64\"/></patternFill></fill></fills>"
         x += "<borders count=\"2\"><border><left/><right/><top/><bottom/><diagonal/></border>"
         x += "<border><left style=\"thin\"><color rgb=\"FFD0D3D9\"/></left><right style=\"thin\"><color rgb=\"FFD0D3D9\"/></right><top style=\"thin\"><color rgb=\"FFD0D3D9\"/></top><bottom style=\"thin\"><color rgb=\"FFD0D3D9\"/></bottom><diagonal/></border></borders>"
         x += "<cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs>"

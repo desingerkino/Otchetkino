@@ -50,8 +50,11 @@ final class ExportNamesTests: XCTestCase {
     func testManyItemsAreTruncatedWithCount() {
         let items = (1...8).map { item("Т\($0)", 1_000) }
         let line = ReceiptCaption.lines(receipt(1, items))[1]
-        XCTAssertTrue(line.contains("Т1, Т2, Т3, Т4 и ещё 4 позиции"), line)
-        XCTAssertFalse(line.contains("Т5"))
+        XCTAssertTrue(line.contains("Т1, Т2, Т3 и ещё 5 позиций"), line)
+        XCTAssertFalse(line.contains("Т4"))
+        // ровно три — перечисляются полностью, четыре — три и «и ещё 1 позиция»
+        XCTAssertFalse(ReceiptCaption.lines(receipt(2, (1...3).map { item("А\($0)", 1) }))[1].contains("ещё"))
+        XCTAssertTrue(ReceiptCaption.lines(receipt(3, (1...4).map { item("А\($0)", 1) }))[1].contains("А1, А2, А3 и ещё 1 позиция"))
         XCTAssertTrue(norm(line).hasSuffix(norm(Money.format(8_000))), "сумма — по всему чеку")
         XCTAssertEqual(ReceiptCaption.plural(1), "позиция"); XCTAssertEqual(ReceiptCaption.plural(3), "позиции")
         XCTAssertEqual(ReceiptCaption.plural(5), "позиций"); XCTAssertEqual(ReceiptCaption.plural(11), "позиций"); XCTAssertEqual(ReceiptCaption.plural(21), "позиция")
