@@ -229,14 +229,7 @@ struct MacWorkspace: View {
                                 )
                         }
                     } header: {
-                        VStack(spacing: 0) {
-                            Color.clear.frame(height: 10)       // отступ перед следующей группой
-                            Text(Fmt.dayHeader.string(from: g.day).uppercased())
-                                .font(.caption.weight(.bold)).foregroundStyle(Color.rkAccent)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, 10).padding(.vertical, 4)
-                                .background(Color.rkDateHeader)
-                        }
+                        DateHeaderView(day: g.day)
                     }
                 }
             }
@@ -605,5 +598,25 @@ struct BulkEditSheet: View {
             }
         }
         saver.saveNow()
+    }
+}
+
+
+/// Заголовок группы покупок: только синий текст даты по центру, без полосы, рамок и теней.
+/// Остаётся закреплённым заголовком секции списка, поэтому при прокрутке показывает дату видимой группы.
+/// Фон — цвет самой подложки списка (не заметен): иначе строки просвечивали бы под закреплённым текстом.
+struct DateHeaderView: View {
+    let day: Date
+    static func text(_ day: Date) -> String { Fmt.dayHeader.string(from: day).uppercased() }
+    var body: some View {
+        VStack(spacing: 0) {
+            Color.clear.frame(height: 10)       // отступ перед следующей группой
+            Text(Self.text(day))
+                .font(.caption.weight(.bold)).foregroundStyle(Color.rkAccent)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.vertical, 4)
+        }
+        .background(Color.rkBackground)
     }
 }

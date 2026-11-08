@@ -46,6 +46,8 @@ struct ReceiptForm: View {
     @State private var viewer: ViewerTarget?
     @State private var replacing: ReplaceTarget?
     @State private var confirmDelete = false
+    @State private var photoMessage: String?
+    @State private var showCardImporter = false
     @State private var showRaw = false
 
     private static let dateRowHeight: CGFloat = 34
@@ -56,7 +58,12 @@ struct ReceiptForm: View {
         ScrollView {
             VStack(spacing: 14) {
                 statusBanner(review)
-                RKSection("Чек") {
+                RKSection {
+                    HStack(alignment: .center) {
+                        Text("Чек").font(.caption.weight(.semibold)).foregroundStyle(.secondary).textCase(.uppercase)
+                        Spacer(minLength: 8)
+                        addReceiptButton
+                    }
                     // номер слева, дата справа — одна строка, общая высота и центровка по вертикали
                     VStack(alignment: .leading, spacing: 5) {
                         HStack(spacing: 6) {
@@ -126,6 +133,9 @@ struct ReceiptForm: View {
             .padding(14)
         }
         .background(Color.rkBackground)
+        .alert("Фотографии", isPresented: Binding(get: { photoMessage != nil }, set: { if !$0 { photoMessage = nil } })) {
+            Button("OK", role: .cancel) {}
+        } message: { Text(photoMessage ?? "") }
         .alert("Удалить покупку \(receipt.numberText) вместе со всеми данными и фотографиями чека?", isPresented: $confirmDelete) {
             Button("Отмена", role: .cancel) {}
             Button("Удалить", role: .destructive) { DataOps.deleteReceipts(ctx, [receipt]); SaveCoordinator.shared.saveNow(); dismiss() }
@@ -172,6 +182,43 @@ struct ReceiptForm: View {
         }
     }
 
+    /// Единый путь прикрепления фотографий к текущему чеку (кнопка в карточке «Чек» и блок «Фотографии чека»).
+    private func attachPhotos(_ datas: [Data]) {
+        guard !datas.isEmpty else { return }
+        guard saver.saveNow() else {                    // сначала сохраняем саму покупку
+            photoMessage = "Не удалось сохранить покупку, фотографии не добавлены. \(saver.errorText)"; return
+        }
+        let result = DataOps.attachPhotos(ctx, datas: datas, to: receipt)
+        if result.added > 0 {
+            if receipt.noReceipt { receipt.noReceipt = false }
+            guard saver.saveNow() else { photoMessage = "Не удалось сохранить фотографии. \(saver.errorText)"; return }
+            if receipt.rawText.isEmpty && receipt.purchaseList.allSatisfy({ $0.amountKop == 0 }) { OCRCoordinator.shared.recognize(receipt) }
+        }
+        if result.skipped > 0 {
+            photoMessage = result.added == 0 ? "Эти фотографии уже прикреплены к чеку." : "Добавлено: \(result.added). Повторяющиеся фотографии пропущены: \(result.skipped)."
+        }
+    }
+
+    /// Синяя кнопка в шапке карточки «Чек». На Mac сразу открывает окно выбора файлов, на iPhone — меню источников.
+    @ViewBuilder private var addReceiptButton: some View {
+        #if os(macOS)
+        Button { showCardImporter = true } label: { Text("+ Добавить чек") }
+            .buttonStyle(RKCompactPrimaryButtonStyle())
+            .fileImporter(isPresented: $showCardImporter, allowedContentTypes: [.image], allowsMultipleSelection: true) { result in
+                switch result {
+                case .success(let urls):
+                    let datas = FileImport.readImages(urls)
+                    if datas.isEmpty { photoMessage = "Не удалось прочитать выбранные файлы. Поддерживаются изображения (JPEG, PNG, HEIC и другие)." }
+                    else { attachPhotos(datas) }
+                case .failure(let e):
+                    if (e as NSError).code != NSUserCancelledError { photoMessage = "Не удалось открыть файлы: \(e.localizedDescription)" }
+                }
+            }
+        #else
+        PhotoSourceMenu(onPicked: { datas, _ in attachPhotos(datas) }, label: { Text("+ Добавить чек").modifier(RKCompactPrimaryLabel()) })
+        #endif
+    }
+
     @ViewBuilder private var photoCard: some View {
         RKSection("Фотографии чека") {
             let photos = receipt.photoList
@@ -182,12 +229,7 @@ struct ReceiptForm: View {
                            onDelete: { ph in ctx.delete(ph) })
             }
             HStack(spacing: 10) {
-                PhotoSourceMenu(onPicked: { datas, _ in
-                    for d in datas { DataOps.addPhoto(ctx, data: d, to: receipt) }
-                    if receipt.noReceipt { receipt.noReceipt = false }
-                    saver.saveNow()   // фото сразу записывается и связывается с покупкой
-                    if receipt.rawText.isEmpty && receipt.purchaseList.allSatisfy({ $0.amountKop == 0 }) { OCRCoordinator.shared.recognize(receipt) }
-                }, label: { Label(photos.isEmpty ? "Добавить фото чека" : "Добавить ещё фото", systemImage: "camera.badge.ellipsis") })
+                PhotoSourceMenu(onPicked: { datas, _ in attachPhotos(datas) }, label: { Label(photos.isEmpty ? "Добавить фото чека" : "Добавить ещё фото", systemImage: "camera.badge.ellipsis") })
                 .buttonStyle(RKSecondaryButtonStyle())
                 if !photos.isEmpty {
                     Button { OCRCoordinator.shared.recognize(receipt, force: true) } label: { Label("Распознать заново", systemImage: "text.viewfinder") }

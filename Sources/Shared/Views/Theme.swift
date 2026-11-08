@@ -40,7 +40,6 @@ extension Color {
     static let rkRowOdd = dynamic(light: (0.914, 0.918, 0.929), dark: (0.15, 0.155, 0.17))
     static let rkRowEven = dynamic(light: (0.851, 0.863, 0.882), dark: (0.19, 0.195, 0.21))
     /// Фон заголовков дат (#E3E5E9) и шапки таблицы.
-    static let rkDateHeader = dynamic(light: (0.890, 0.898, 0.914), dark: (0.17, 0.175, 0.19))
     static let rkSoft = dynamic(light: (0.890, 0.898, 0.914), dark: (0.19, 0.195, 0.21))
 }
 
@@ -201,5 +200,22 @@ struct StatusBanner: View {
         .padding(12)
         .background(tint.opacity(0.10))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+}
+
+
+/// Компактная синяя кнопка (для шапки карточки): синий фон, белый текст, небольшое скругление, без растягивания по ширине.
+struct RKCompactPrimaryLabel: ViewModifier {
+    func body(content: Content) -> some View {
+        content.font(.subheadline.weight(.semibold)).foregroundStyle(.white)
+            .padding(.horizontal, 12).padding(.vertical, 5)
+            .background(Color.rkAccent, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .fixedSize()
+    }
+}
+
+struct RKCompactPrimaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label.modifier(RKCompactPrimaryLabel()).opacity(configuration.isPressed ? 0.85 : 1)
     }
 }

@@ -27,11 +27,10 @@ final class ComfortAndFlowTests: XCTestCase {
     func testMutedPalette() {
         XCTAssertEqual(hex(.rkRowOdd), "#E9EAED")
         XCTAssertEqual(hex(.rkRowEven), "#D9DCE1")
-        XCTAssertEqual(hex(.rkDateHeader), "#E3E5E9")
         XCTAssertEqual(hex(.rkBackground), "#F0F1F3")
         XCTAssertEqual(hex(.rkCard), "#F3F4F6")
         XCTAssertLessThan(luminance(.rkField), luminance(.rkCard), "поля ввода темнее карточек")
-        for c in [Color.rkBackground, .rkCard, .rkRowOdd, .rkRowEven, .rkDateHeader, .rkField] {
+        for c in [Color.rkBackground, .rkCard, .rkRowOdd, .rkRowEven, .rkField] {
             XCTAssertNotEqual(hex(c), "#FFFFFF", "чистого белого в интерфейсе быть не должно")
         }
         XCTAssertGreaterThan(luminance(.rkRowOdd) - luminance(.rkRowEven), 0.03, "оттенки строк заметно различимы")
