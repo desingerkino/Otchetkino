@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		08C4C6CC6D29C13AB58502B3 /* ImageTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF22E764FE6C5570FB84CCEF /* ImageTools.swift */; };
+		0D17AA8D137A39F0DE82FBC6 /* NumberingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA55F0BD711B004880BFD280 /* NumberingTests.swift */; };
 		13B04191D2252A6B14235A8B /* Domain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3875299D2F2F8CFA6C299D01 /* Domain.swift */; };
 		1533202797564625826FE7A6 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28C7BA29CE5FE0F8751460A /* Persistence.swift */; };
 		17624D4F9E4630D2DF603E66 /* StoreDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D86BB31D3A05A3246CD985D /* StoreDirectory.swift */; };
@@ -33,12 +34,14 @@
 		6ADE837FFA6D83DAD97808E9 /* RekvizitApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46614C81F0566FD5B8AB5023 /* RekvizitApp.swift */; };
 		6AF5C985C2F21DE2E4269E94 /* ZipWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A170E8F08043F3D1FA76CDBF /* ZipWriter.swift */; };
 		6D6CB073643D706639E4977E /* ReportsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154DCB1B5B73124629D92653 /* ReportsView.swift */; };
+		6D6FCBAAA0BBBE1FCE37FB10 /* PurchaseFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 786C0B5A3BDF091CE90B1724 /* PurchaseFlow.swift */; };
 		775A792217C458A0BC48AA0D /* MacRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 199651B8EF81DB0768903D6F /* MacRootView.swift */; };
 		7B061A7FA98E131BC06CE032 /* ProjectSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60AD02CBE7BA5D2EEC15E954 /* ProjectSheets.swift */; };
 		7B9E52552FAF6DEBC73DC87C /* ReportData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08E7BDC906F34B3CBE84F685 /* ReportData.swift */; };
 		87318A80261C4EBD144A71ED /* MacWorkspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92ADC44786704FBA990E6DC0 /* MacWorkspace.swift */; };
 		880D68893DBFD90F064706BA /* ProjectSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60AD02CBE7BA5D2EEC15E954 /* ProjectSheets.swift */; };
 		8B38B92C7AB5ECE2B635B820 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 020E4D721446CAFFB1B0846E /* HomeView.swift */; };
+		8DE7D71905988AAABA3434F3 /* PurchaseFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 786C0B5A3BDF091CE90B1724 /* PurchaseFlow.swift */; };
 		8F25E96ECE7D9815863B4926 /* ReceiptEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D8D58F3D01A891B3C7E294 /* ReceiptEditorView.swift */; };
 		956B2E314659B988A0DF0701 /* ReportsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154DCB1B5B73124629D92653 /* ReportsView.swift */; };
 		95BC1CD2DD2A45C65C5D0176 /* Info-iOS.plist in Resources */ = {isa = PBXBuildFile; fileRef = 94EDDA3C4E7C999065C369D6 /* Info-iOS.plist */; };
@@ -106,6 +109,7 @@
 		6E76E41E372733890CD115CA /* Rekvizit-macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Rekvizit-macOS.entitlements"; sourceTree = "<group>"; };
 		70A5F430E0449610E50E1D52 /* PhotoViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoViews.swift; sourceTree = "<group>"; };
 		781CCC7D004A531F621D8B30 /* Info-macOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Info-macOS.plist"; sourceTree = "<group>"; };
+		786C0B5A3BDF091CE90B1724 /* PurchaseFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseFlow.swift; sourceTree = "<group>"; };
 		7AE854CC3479F672BBE21B74 /* PhoneRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneRootView.swift; sourceTree = "<group>"; };
 		8CF207614402AAB2019BCA06 /* PDFBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFBuilder.swift; sourceTree = "<group>"; };
 		92ADC44786704FBA990E6DC0 /* MacWorkspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacWorkspace.swift; sourceTree = "<group>"; };
@@ -126,6 +130,7 @@
 		D94715E8A9493E46DF3567BC /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		DF22E764FE6C5570FB84CCEF /* ImageTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageTools.swift; sourceTree = "<group>"; };
 		DF7D8033B2EE78E27197F377 /* SaveCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveCoordinator.swift; sourceTree = "<group>"; };
+		EA55F0BD711B004880BFD280 /* NumberingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberingTests.swift; sourceTree = "<group>"; };
 		F9B6A3C5DF10CA158FC08EC6 /* Rekvizit-macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Rekvizit-macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FD0306135D0CD01C02958E15 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -176,6 +181,7 @@
 			children = (
 				9CA499E1215E97F7FD9BA94B /* AutosaveTests.swift */,
 				3AA76EC08A7695FFE5F6EC58 /* CoreTests.swift */,
+				EA55F0BD711B004880BFD280 /* NumberingTests.swift */,
 				5370E0C936B57843F4C713FC /* OCRQualityTests.swift */,
 				18F04FDF8651311E9A9F41AF /* ParserTests.swift */,
 			);
@@ -235,6 +241,7 @@
 				4C2D575C2447E55E1340924B /* Money.swift */,
 				24D6D833984D67E3800BA70C /* OCRService.swift */,
 				8CF207614402AAB2019BCA06 /* PDFBuilder.swift */,
+				786C0B5A3BDF091CE90B1724 /* PurchaseFlow.swift */,
 				D38542D5491C24E2F5503E08 /* ReceiptParser.swift */,
 				08E7BDC906F34B3CBE84F685 /* ReportData.swift */,
 				DF7D8033B2EE78E27197F377 /* SaveCoordinator.swift */,
@@ -394,6 +401,7 @@
 			files = (
 				3A23670DE0CAFE8BD90CA1F3 /* AutosaveTests.swift in Sources */,
 				2EB8FF75B68E99C19904C25D /* CoreTests.swift in Sources */,
+				0D17AA8D137A39F0DE82FBC6 /* NumberingTests.swift in Sources */,
 				E6184A2123AA1627CEAC51C5 /* OCRQualityTests.swift in Sources */,
 				C2A628DFC243FC12A4AD7881 /* ParserTests.swift in Sources */,
 			);
@@ -418,6 +426,7 @@
 				1533202797564625826FE7A6 /* Persistence.swift in Sources */,
 				3BF6A8B0B983FBDC2F592932 /* PhotoViews.swift in Sources */,
 				7B061A7FA98E131BC06CE032 /* ProjectSheets.swift in Sources */,
+				6D6FCBAAA0BBBE1FCE37FB10 /* PurchaseFlow.swift in Sources */,
 				1CF22338CE9E8A23A47D5225 /* PurchasesView.swift in Sources */,
 				44AEFA982282EA7CFA70A8BD /* ReceiptEditorView.swift in Sources */,
 				20353E8033F99893947DA87D /* ReceiptParser.swift in Sources */,
@@ -453,6 +462,7 @@
 				1F51A2612F73CDDC6344AB64 /* PhoneRootView.swift in Sources */,
 				DAC4E885F97F3388B4EFB98B /* PhotoViews.swift in Sources */,
 				880D68893DBFD90F064706BA /* ProjectSheets.swift in Sources */,
+				8DE7D71905988AAABA3434F3 /* PurchaseFlow.swift in Sources */,
 				C5C671A7897C57CA11E48F3B /* PurchasesView.swift in Sources */,
 				8F25E96ECE7D9815863B4926 /* ReceiptEditorView.swift in Sources */,
 				385332BEEC559A01A7BBDBA4 /* ReceiptParser.swift in Sources */,
