@@ -332,7 +332,7 @@ final class NumberingTests: XCTestCase {
         let proj = project()
         let rs = (1...5).map { make(proj, "П\($0)") }
         rs[0].number = 1; rs[1].number = 2; rs[2].number = 5; rs[3].number = 5; rs[4].number = 9
-        XCTAssertTrue(saver.saveNow())
+        try ctx.save()   // напрямую, как лежали старые данные: saveNow() теперь сам выравнивает номера
         XCTAssertTrue(Maintenance.numbersNeedFix(ctx))
         Maintenance.fixDuplicateReceiptNumbers(ctx)
         try ctx.save()
