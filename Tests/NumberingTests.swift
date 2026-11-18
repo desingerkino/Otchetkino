@@ -3,7 +3,7 @@ import CoreData
 import PDFKit
 @testable import Rekvizit
 
-/// Сквозная последовательная нумерация: 1…N без пропусков, порядок создания, независимо от даты, сортировки и группировки.
+/// Сквозная последовательная нумерация: 1…N без пропусков строго по дате покупки; внутри одного дня — в порядке добавления.
 @MainActor
 final class NumberingTests: XCTestCase {
     private var p: PersistenceController!
@@ -99,27 +99,60 @@ final class NumberingTests: XCTestCase {
         XCTAssertEqual(titles(proj), ["П2", "П3", "н"])
     }
 
-    // 7, 8, 9: дата, группировка, сортировка не меняют номера
-    func testDateChangeGroupingAndSortingDoNotChangeNumbers() {
+    // 7, 8, 9: номера следуют за датой покупки; сортировка и группировка в таблице номера не меняют
+    func testNumbersFollowPurchaseDate() {
         let proj = project()
-        let a = make(proj, "А", day: 6), b = make(proj, "Б", day: 7), c = make(proj, "В", day: 8), d = make(proj, "Г", day: 6)
+        // сначала 5 и 6 ноября, потом — вспомнили чеки от 3 ноября
+        let c = make(proj, "В", day: 5), d = make(proj, "Г", day: 6)
         XCTAssertTrue(saver.saveNow())
-        XCTAssertEqual([a, b, c, d].map { $0.number }, [1, 2, 3, 4])
-        // перенос на другую дату
-        b.date = Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 1, hour: 12))
+        XCTAssertEqual([c, d].map { $0.number }, [1, 2])
+        let a1 = make(proj, "А1", day: 3), a2 = make(proj, "А2", day: 3)
         XCTAssertTrue(saver.saveNow())
-        XCTAssertEqual([a, b, c, d].map { $0.number }, [1, 2, 3, 4])
+        // чеки от 3 ноября встали первыми (внутри дня — в порядке добавления), остальные сдвинулись
+        XCTAssertEqual([a1, a2, c, d].map { $0.number }, [1, 2, 3, 4])
+        // ещё один чек от 3 ноября — в конец 3 ноября, следующие получают +1
+        let a3 = make(proj, "А3", day: 3)
+        XCTAssertTrue(saver.saveNow())
+        XCTAssertEqual([a1, a2, a3, c, d].map { $0.number }, [1, 2, 3, 4, 5])
+        assertSequential(proj)
         // сортировка от новых к старым и группировка по дням — только представление
         let byDateDesc = proj.receiptList.sorted { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }
-        XCTAssertEqual(Set(byDateDesc.map { $0.number }), [1, 2, 3, 4])
+        XCTAssertEqual(Set(byDateDesc.map { $0.number }), [1, 2, 3, 4, 5])
         let groups = Dictionary(grouping: proj.receiptList) { Calendar.current.startOfDay(for: $0.date ?? Date()) }
         XCTAssertEqual(groups.count, 3)
-        XCTAssertEqual([a, b, c, d].map { $0.number }, [1, 2, 3, 4])
-        // удаление из середины считается по всему проекту, а не по дню
+        XCTAssertEqual([a1, a2, a3, c, d].map { $0.number }, [1, 2, 3, 4, 5])
+    }
+
+    func testChangingDateRenumbers() {
+        let proj = project()
+        let a = make(proj, "А", day: 6), b = make(proj, "Б", day: 7), c = make(proj, "В", day: 8)
+        XCTAssertTrue(saver.saveNow())
+        XCTAssertEqual([a, b, c].map { $0.number }, [1, 2, 3])
+        // перенесли «В» на раннюю дату — он становится первым
+        c.date = Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 1, hour: 12))
+        XCTAssertTrue(saver.saveNow())
+        XCTAssertEqual([c, a, b].map { $0.number }, [1, 2, 3])
+        XCTAssertEqual(titles(proj), ["В", "А", "Б"])
+        // удаление из середины по-прежнему считается по всему проекту
         deleteAndSave([a])
-        XCTAssertEqual([b, c, d].map { $0.number }, [1, 2, 3])
-        XCTAssertEqual(make(proj, "Е", day: 5).number, 4)
+        XCTAssertEqual([c, b].map { $0.number }, [1, 2])
+        // новый чек от самой поздней даты — в конец
+        XCTAssertEqual(make(proj, "Е", day: 20).number, 3)
+        XCTAssertTrue(saver.saveNow())
         assertSequential(proj)
+    }
+
+    // старые данные: номера шли в порядке добавления, а не по дате — при запуске исправляются
+    func testLegacyOrderByAddingIsFixedByDate() throws {
+        let proj = project()
+        let late = make(proj, "Пятое", day: 5), early = make(proj, "Третье", day: 3), mid = make(proj, "Четвёртое", day: 4)
+        late.number = 1; early.number = 2; mid.number = 3     // как было раньше: по порядку добавления
+        try ctx.save()
+        XCTAssertTrue(Maintenance.numbersNeedFix(ctx), "порядок не по дате должен считаться ошибкой")
+        Maintenance.fixDuplicateReceiptNumbers(ctx)
+        try ctx.save()
+        XCTAssertEqual([early, mid, late].map { $0.number }, [1, 2, 3])
+        XCTAssertFalse(Maintenance.numbersNeedFix(ctx))
     }
 
     // 10, 11: Undo / Redo

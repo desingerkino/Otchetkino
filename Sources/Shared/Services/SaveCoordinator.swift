@@ -132,5 +132,11 @@ final class SaveCoordinator: ObservableObject {
             }
             r.updatedAt = Date()
         }
+        // Номера идут по дате покупки: чек добавлен задним числом или у чека сменили дату — номера пересчитываются в этой же записи.
+        var projects = [RProject]()
+        for r in receipts where !r.isDeleted {
+            if let p = r.project, !projects.contains(where: { $0 === p }) { projects.append(p) }
+        }
+        for p in projects { DataOps.normalizeNumbers(p) }
     }
 }

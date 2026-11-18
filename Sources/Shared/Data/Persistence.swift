@@ -191,17 +191,18 @@ enum Maintenance {
         }
     }
 
-    /// Нумерация чеков во всех проектах: без пропусков и повторов (в том числе после синхронизации с другого устройства).
+    /// Нумерация чеков во всех проектах: по дате покупки, без пропусков и повторов (в том числе после синхронизации с другого устройства).
     static func fixDuplicateReceiptNumbers(_ ctx: NSManagedObjectContext) {
         let req = NSFetchRequest<RProject>(entityName: "RProject")
         for project in (try? ctx.fetch(req)) ?? [] { DataOps.normalizeNumbers(project) }
     }
 
-    /// Есть ли проекты с пропусками или повторами в нумерации.
+    /// Есть ли проекты, где номера идут не по дате покупки либо с пропусками или повторами.
     static func numbersNeedFix(_ ctx: NSManagedObjectContext) -> Bool {
         let req = NSFetchRequest<RProject>(entityName: "RProject")
         for project in (try? ctx.fetch(req)) ?? [] {
-            let nums = (project.receipts as? Set<RReceipt> ?? []).map { Int($0.number) }.sorted()
+            // номера должны идти 1…N строго в порядке по дате покупки
+            let nums = DataOps.receiptsInNumberingOrder(project).map { Int($0.number) }
             if !nums.isEmpty, nums != Array(1...nums.count) { return true }
         }
         return false

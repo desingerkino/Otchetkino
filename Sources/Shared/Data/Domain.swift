@@ -259,27 +259,33 @@ enum DataOps {
         return r
     }
 
-    /// ЕДИНЫЙ принцип нумерации: номера идут подряд 1…N без пропусков в порядке создания чеков.
-    /// Порядок задают (текущий номер, время создания, uuid), поэтому дата, сортировка и группировка номера не меняют,
-    /// а после удаления следующие чеки сдвигаются вверх. Изменения только вносятся в контекст; запись — одним `save()` вместе с остальным
-    /// (атомарно: либо удаление и новые номера записаны вместе, либо ничего).
-    @discardableResult
-    static func normalizeNumbers(_ project: RProject) -> Bool {
-        let live = (project.receipts as? Set<RReceipt> ?? []).filter { !$0.isDeleted }.sorted {
-            if $0.number != $1.number { return $0.number < $1.number }
+    /// Чеки проекта в порядке нумерации: по дню покупки, внутри дня — по времени добавления, затем по uuid.
+    static func receiptsInNumberingOrder(_ project: RProject) -> [RReceipt] {
+        let cal = Calendar.current
+        return (project.receipts as? Set<RReceipt> ?? []).filter { !$0.isDeleted }.sorted {
+            let da = cal.startOfDay(for: $0.date ?? .distantPast), db = cal.startOfDay(for: $1.date ?? .distantPast)
+            if da != db { return da < db }
             let a = $0.createdAt ?? .distantPast, b = $1.createdAt ?? .distantPast
             if a != b { return a < b }
             return ($0.uuid?.uuidString ?? "") < ($1.uuid?.uuidString ?? "")
         }
+    }
+
+    /// ЕДИНЫЙ принцип нумерации: номера идут подряд 1…N без пропусков строго по дате покупки; внутри одного дня — в порядке добавления.
+    /// Чек, добавленный задним числом, встаёт в конец своего дня, следующие получают номер +1; смена даты переставляет номера;
+    /// после удаления следующие чеки сдвигаются вверх. Изменения только вносятся в контекст; запись — одним `save()` вместе с остальным
+    /// (атомарно: либо удаление и новые номера записаны вместе, либо ничего).
+    @discardableResult
+    static func normalizeNumbers(_ project: RProject) -> Bool {
         var changed = false
-        for (i, r) in live.enumerated() {
+        for (i, r) in receiptsInNumberingOrder(project).enumerated() {
             let n = Int32(i + 1)
             if r.number != n { r.number = n; r.updatedAt = Date(); changed = true }
         }
         return changed
     }
 
-    /// Ручная кнопка «Выровнять нумерацию»: закрывает пропуски и устраняет повторы, порядок создания сохраняется.
+    /// Ручная кнопка «Выровнять нумерацию»: закрывает пропуски и устраняет повторы, порядок — по дате покупки.
     static func renumber(_ ctx: NSManagedObjectContext, project: RProject) {
         normalizeNumbers(project)
         try? ctx.save()
