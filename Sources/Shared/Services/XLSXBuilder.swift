@@ -104,6 +104,9 @@ enum XLSXBuilder {
         buildDetail(detail, s, &detailPics, &media)
         detail.hasDrawing = !detailPics.isEmpty
 
+        let detailPlain = Sheet()
+        buildDetailPlain(detailPlain, s)
+
         let registry = Sheet()
         buildRegistry(registry, s)
 
@@ -115,6 +118,7 @@ enum XLSXBuilder {
         let sheets: [(String, Sheet, [Picture])] = [
             ("Сводный отчёт", summary, []),
             ("Детализация расходов", detail, detailPics),
+            ("Детализация без чеков", detailPlain, []),
             ("Реестр чеков", registry, []),
             ("Фотографии чеков", photos, photoPics)
         ]
@@ -316,7 +320,52 @@ enum XLSXBuilder {
         sh.height(totalRow, 26)
     }
 
-    // MARK: - Лист 3. Реестр чеков
+    // MARK: - Лист 3. Детализация без чеков (та же таблица, без фото и без колонки «Фото чека»)
+
+    private static func buildDetailPlain(_ sh: Sheet, _ s: ReportSnapshot) {
+        sh.widths = [6, 12, 36, 20, 14, 24, 15, 9, 42]
+        sh.text(1, 1, "ДЕТАЛИЗАЦИЯ РАСХОДОВ (БЕЗ ЧЕКОВ) — \(s.projectName)", S.title); sh.merge(1, 1, 1, 9); sh.height(1, 28)
+        sh.text(2, 1, "Подотчётное лицо: \(s.holder.isEmpty ? "—" : s.holder)  ·  Период: \(s.periodText)", S.subtitle); sh.merge(2, 1, 2, 9)
+        let headers = ["№", "Дата", "Наименование", "Категория", "Сцена", "Магазин", "Сумма", "№ чека", "Комментарий"]
+        for (i, h) in headers.enumerated() { sh.text(4, i + 1, h, S.header) }
+        sh.height(4, 30)
+        sh.freezeAfterRow = 4
+
+        var r = 5
+        var n = 1
+        let firstDataRow = r
+        for rec in s.receipts {
+            let items = rec.items.isEmpty ? [ReportSnapshot.Item(title: "(без позиций)", category: "—", scenes: "", amount: 0, quantity: 1, purpose: "")] : rec.items
+            for it in items {
+                sh.number(r, 1, Double(n), S.int)
+                sh.number(r, 2, serial(rec.date), S.date)
+                sh.text(r, 3, it.quantity != 1 && it.quantity > 0 ? "\(it.title) (× \(trimQty(it.quantity)))" : it.title, S.text)
+                sh.text(r, 4, it.category, S.text)
+                sh.text(r, 5, it.scenes, S.text)
+                sh.text(r, 6, rec.store, S.text)
+                sh.number(r, 7, Money.double(it.amount), S.money)
+                sh.number(r, 8, Double(rec.number), S.int)
+                let comment = [it.purpose, rec.comment].filter { !$0.isEmpty }.joined(separator: "\n")
+                sh.text(r, 9, comment, S.text)
+                let lines = max(lineCount(it.title, width: 34), lineCount(comment, width: 40), lineCount(rec.store, width: 22), lineCount(it.category, width: 18))
+                sh.height(r, max(22.0, Double(lines) * 16.0 + 6))
+                n += 1
+                r += 1
+            }
+        }
+        // итог
+        let totalRow = r
+        for c in 1...9 { sh.blank(totalRow, c, S.totalText) }
+        sh.text(totalRow, 1, "ИТОГО", S.totalText); sh.merge(totalRow, 1, totalRow, 6)
+        if r > firstDataRow {
+            sh.formula(totalRow, 7, "SUM(G\(firstDataRow):G\(totalRow - 1))", cached: Money.double(s.spent), S.totalMoney)
+        } else {
+            sh.number(totalRow, 7, 0, S.totalMoney)
+        }
+        sh.height(totalRow, 26)
+    }
+
+    // MARK: - Лист 4. Реестр чеков
 
     private static func buildRegistry(_ sh: Sheet, _ s: ReportSnapshot) {
         sh.widths = [10, 12, 34, 16, 11, 20, 12]
@@ -346,7 +395,7 @@ enum XLSXBuilder {
         sh.height(r, 24)
     }
 
-    // MARK: - Лист 4. Фотографии чеков
+    // MARK: - Лист 5. Фотографии чеков
 
     private static func buildPhotos(_ sh: Sheet, _ s: ReportSnapshot, _ pics: inout [Picture], _ media: inout [Data]) {
         sh.widths = [2, 90]

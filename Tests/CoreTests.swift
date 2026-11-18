@@ -174,7 +174,7 @@ final class CoreTests: XCTestCase {
         let data = XLSXBuilder.build(snap)
         let files = try XCTUnwrap(ZipReader.read(data))
         for name in ["[Content_Types].xml", "_rels/.rels", "xl/workbook.xml", "xl/styles.xml",
-                     "xl/worksheets/sheet1.xml", "xl/worksheets/sheet2.xml", "xl/worksheets/sheet3.xml", "xl/worksheets/sheet4.xml",
+                     "xl/worksheets/sheet1.xml", "xl/worksheets/sheet2.xml", "xl/worksheets/sheet3.xml", "xl/worksheets/sheet4.xml", "xl/worksheets/sheet5.xml",
                      "xl/drawings/drawing1.xml", "xl/drawings/drawing2.xml", "xl/media/image1.jpeg"] {
             XCTAssertNotNil(files[name], "нет \(name)")
         }

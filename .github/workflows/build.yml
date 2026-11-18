@@ -51,8 +51,9 @@ jobs:
           print(wb.sheetnames)
           for ws in wb.worksheets:
               print(ws.title, ws.dimensions, 'images:', len(ws._images), 'merged:', len(ws.merged_cells.ranges))
-          assert wb.sheetnames == ['Сводный отчёт', 'Детализация расходов', 'Реестр чеков', 'Фотографии чеков']
+          assert wb.sheetnames == ['Сводный отчёт', 'Детализация расходов', 'Детализация без чеков', 'Реестр чеков', 'Фотографии чеков']
           assert len(wb['Детализация расходов']._images) == 3
+          assert len(wb['Детализация без чеков']._images) == 0
           assert len(wb['Фотографии чеков']._images) == 4
           PY
       - name: Сборка Mac (универсальная, для запуска без подписи Apple)
