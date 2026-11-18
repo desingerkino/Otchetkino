@@ -18,7 +18,14 @@ struct NewProjectSheet: View {
                     TextField("ФИО подотчётного лица", text: $holder)
                 }
                 Section("Первая выдача денег") {
+                    #if os(macOS)
+                    LabeledContent("Сумма, ₽") {
+                        AmountField(title: "например, 50 000", kop: $amount)
+                            .multilineTextAlignment(.trailing)
+                    }
+                    #else
                     AmountField(title: "Сумма, ₽ (например, 50 000)", kop: $amount)
+                    #endif
                     DatePicker("Дата выдачи", selection: $date, displayedComponents: .date)
                 }
                 Section { Text("Дополнительные выдачи и возвраты можно добавить позже на главном экране.").font(.footnote).foregroundStyle(.secondary) }
